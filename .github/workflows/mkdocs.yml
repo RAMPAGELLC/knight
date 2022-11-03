@@ -1,5 +1,4 @@
 name: mkdocs
-site_name: Knight Framework
 
 on:
   push:
