@@ -4,8 +4,8 @@ Knight; Roblox Game Framework
 # Notice
 Knight is in early development, please report any and all issues.
 
-# Release
-We plan to release Knight soon upon completion of the framework on the roblox developer forum.
+# Docs
+https://knight.vq9o.com
 
 # License
 ```
