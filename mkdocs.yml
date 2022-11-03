@@ -1,3 +1,7 @@
 site_name: Knight Framework
+site_author: RAMPAGE Interactive
+repo_url: https://github.com/rampagellc/knight
+repo_name: GitHub
+docs_dir: docs
 theme:
   name: material
