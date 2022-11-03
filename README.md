@@ -1,33 +1,71 @@
-# README
+---
+description: >-
+  Services are module scripts that serve a specific purpose. For example a
+  experience may have a service for GameUI, Points, etc.
+---
 
-## knight
+# Services
 
-Knight; Roblox Game Framework
+### Creating a service <a href="#creating-a-service" id="creating-a-service"></a>
 
-## Notice
+You can create a service by creating a new ModuleScript under one of Knights Services folders. Learn how to find knight service folders [Folders explanation](https://app.gitbook.com/s/ZVYkqtpa3etiCJsYeGLR/\~/changes/YBDQiMUocThlJ09JRJ9Z/knight/folders-explanation).
 
-Knight is in early development, please report any and all issues.
+### Template <a href="#template" id="template"></a>
 
-## Release
+Each service is structured with this template.
 
-We plan to release Knight soon upon completion of the framework on the roblox developer forum.
+<pre class="language-lua"><code class="lang-lua">local Knight = {
+	ServiceName = script.Name,
+	ServiceData = {
+		Author = "vq9o",
+		Description = "Example Service example"
+	}
+}
 
-## License
+function Knight.Init()
+	warn("Example Service inited!")
+end
 
+<strong>function Knight.Start()
+</strong>	warn("Example Service Started!")
+end
+
+return Knight</code></pre>
+
+### Default Functions <a href="#default-functions" id="default-functions"></a>
+
+```lua
+function Knight.Init() -- optional. Called on init
+end
 ```
-Knight Roblox Framework
-Copyright (C) 2022 RAMPAGE INTERACTIVE
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>
+```lua
+function Knight.Start() -- optional. Called on start
+end
 ```
+
+### Init <a href="#init" id="init"></a>
+
+<pre class="language-lua"><code class="lang-lua"><strong>local Knight = {
+</strong>	ServiceName = script.Name,
+	ServiceData = {
+		Author = "vq9o",
+		Description = "Example Service example"
+	}
+}
+
+function Knight.Init()
+	-- Client services only.
+	print(Knight.Player.Name) -- Prints LocalPlayer name
+	
+	-- All services can access this.
+	Knight.Shared -- indexs shared, you can access everything in it.
+	Knight. -- indexs your current runtype (client or server)
+	Knight.Knight -- returns knight internal functions
+	
+	-- Example you can call another function bar from service foo without need of using
+	-- Roblox's require().
+	Knight.Services.foo.bar()
+end
+
+return Knight</code></pre>
