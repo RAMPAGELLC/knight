@@ -30,7 +30,12 @@ end
 </strong>	warn("Example Service Started!")
 end
 
-return Knight</code></pre>
+function Knight.Update(DeltaFrame)
+	warn("Example Service called for new frame!")
+end
+
+return Knight
+</code></pre>
 
 ### Default Functions <a href="#default-functions" id="default-functions"></a>
 
@@ -41,6 +46,11 @@ end
 
 ```lua
 function Knight.Start() -- optional. Called on start
+end
+```
+
+```lua
+function Knight.Update(deltaTime) -- optional. Called on every frame.
 end
 ```
 
@@ -68,4 +78,5 @@ function Knight.Init()
 	Knight.Services.foo.bar()
 end
 
-return Knight</code></pre>
+return Knight
+</code></pre>
