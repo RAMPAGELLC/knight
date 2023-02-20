@@ -3,6 +3,7 @@
 * [About](README.md)
 * [Games who use Knight](games-who-use-knight.md)
 * [Templates (RBXL)](templates-rbxl.md)
+* [Download](download.md)
 * [Introduction to Knight](introduction-to-knight/README.md)
   * [What are folders](introduction-to-knight/what-are-folders.md)
   * [Shared Objects](introduction-to-knight/shared-objects/README.md)

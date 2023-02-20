@@ -2,7 +2,7 @@
 
 You can find a folder similar to this screenshot in StarterPlayerScripts for Client, ReplicatedStorage for Shared, and ServerStorage for Server.
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (3).png>)
 
 
 
