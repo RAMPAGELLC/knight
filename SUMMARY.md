@@ -16,4 +16,5 @@
     * [Remotes](introduction-to-knight/shared-services/remotes.md)
     * [SoundService](introduction-to-knight/shared-services/soundservice.md)
     * [FolderPacker](introduction-to-knight/shared-services/folderpacker.md)
+  * [Knight Import](introduction-to-knight/knight-import.md)
   * [Services](introduction-to-knight/services.md)
