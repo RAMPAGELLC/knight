@@ -14,11 +14,16 @@ You can create a service by creating a new ModuleScript under one of Knights Ser
 
 Each service is structured with this template.
 
-<pre class="language-lua"><code class="lang-lua">local Knight = {
+```lua
+local Knight = {
 	ServiceName = script.Name,
 	ServiceData = {
 		Author = "vq9o",
 		Description = "Example Service example"
+	},
+	Config = {
+		CanStart = true,
+		CanUpdate = true,
 	}
 }
 
@@ -26,8 +31,8 @@ function Knight.Init()
 	warn("Example Service inited!")
 end
 
-<strong>function Knight.Start()
-</strong>	warn("Example Service Started!")
+function Knight.Start()
+	warn("Example Service Started!")
 end
 
 function Knight.Update(DeltaFrame)
@@ -35,7 +40,7 @@ function Knight.Update(DeltaFrame)
 end
 
 return Knight
-</code></pre>
+```
 
 ### Default Functions <a href="#default-functions" id="default-functions"></a>
 
@@ -80,3 +85,15 @@ end
 
 return Knight
 </code></pre>
+
+## Config
+
+Within Knight you have abilities to define Config for additional modification to a service.
+
+CanStart & CanUpdate variable allow execution of the .Update() and .Start(). Useful if your using a third-party module and you need to disable Knight from calling its default start function like CameraShaker.
+
+Config is not required and will default to true.
+
+## Priority Startup
+
+Folders named as "Database" will have first priority to init, then folders named "Priority" will init. Useful to load core game backend first.
