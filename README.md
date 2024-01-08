@@ -1,27 +1,41 @@
-# knight
-Knight; Roblox Game Framework
+# Knight
+Knight; The Roblox Game Framework. Knight is a robust framework to assist your needs with organization & tools while developing on Roblox.
 
-# Notice
-Knight is in early development, please report any and all issues.
+This is the barebones verison without additional softwared, if you want something with more starter modules check out the Knight Plus: https://github.com/RAMPAGELLC/KnightPlus
 
-# Docs
+# Documentation
 https://knight.vq9o.com
+
+# Tools
+### RAMPAGE CLI (RCLI)
+Required to install KPM modules.
+https://create.roblox.com/marketplace/asset/7232500201/RAMPAGE-CLI
+
+### Knight Services Manager (KSM)
+Recommended tool to aid with managing services. KSM is a basic rough-draft, issues may occur.
+https://create.roblox.com/marketplace/asset/13168343690/Knight-Services-Manager
 
 # License
 ```
-Knight Roblox Framework
-Copyright (C) 2022 RAMPAGE INTERACTIVE
+MIT License
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (c) 2020-2024 RAMPAGE INTERACTIVE LLC
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
