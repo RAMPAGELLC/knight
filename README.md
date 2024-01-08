@@ -1,7 +1,7 @@
 # Knight
 Knight; The Roblox Game Framework. Knight is a robust framework to assist your needs with organization & tools while developing on Roblox.
 
-This is the barebones verison without additional softwared, if you want something with more starter modules check out the Knight Plus: https://github.com/RAMPAGELLC/KnightPlus
+This is the barebones verison without additional software, if you want something with more starter modules check out the Knight Plus: https://github.com/RAMPAGELLC/KnightPlus
 
 # Documentation
 https://knight.vq9o.com
