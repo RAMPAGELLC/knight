@@ -11,22 +11,34 @@
  (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
+
+ Addons:
+ Knight Script Profiler (KSP): https://github.com/RAMPAGELLC/KnightProfiler/tree/main
  Knight Package Manager (KPM): https://github.com/RAMPAGELLC/KnightPackageManager
+
+ Links:
  Repository: https://github.com/RAMPAGELLC/knight
  Documentation: https://knight.vq9o.com
 ]]
 
-
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
+
 local Knight = {
 	["IsServer"] = RunService:IsServer(),
-	["Version"] = "<0.0.5-prod> KNIGHT FRAMEWORK on Roblox " .. (RunService:IsStudio() and "Studio" or "Experience") .. " | Experience Version: " .. version(),
-	["Core"] = {}
+	["Version"] = "<0.0.6-prod> KNIGHT FRAMEWORK on Roblox "
+		.. (RunService:IsStudio() and "Studio" or "Experience")
+		.. " | Experience Version: "
+		.. version(),
+	["Core"] = {},
+	["runType"] = RunService:IsClient() and "Client" or "Server",
 }
 
-function Knight.Core.Log(Type, ...)
-	local msgs = {...};
-	local l = "[Knight Framework] [" .. Knight.Version .. "]";
+function Knight.Core.Log(Type: string, ...)
+	local msgs = { ... }
+	local l = "[Knight Framework] [" .. Knight.Version .. "]"
 
 	for _, message in pairs(msgs) do
 		if string.lower(Type) == "print" then
@@ -34,7 +46,7 @@ function Knight.Core.Log(Type, ...)
 		elseif string.lower(Type) == "warn" then
 			warn(l .. message)
 		elseif string.lower(Type) == "error" then
-			local s,e = pcall(function()
+			local s, e = pcall(function()
 				error(l .. message)
 			end)
 		end
@@ -84,18 +96,22 @@ function Knight.Core.Import(Path)
 		repeat
 			task.wait(1)
 		until _G.Knight ~= nil
-		task.wait(.2)
+		task.wait(0.2)
 	end
-	
+
 	if _G.Knight.API == nil then
 		repeat
 			task.wait(1)
 		until _G.Knight.API ~= nil
-		task.wait(.2)
+		task.wait(0.2)
 	end
-	
+
 	if string.sub(Path, 1, string.len("KPM")) == "KPM" then
-		return require(game:GetService("ReplicatedStorage"):WaitForChild("Packages", 900):WaitForChild(string.gsub(Path, "KPM/", "")).init)
+		return require(
+			game:GetService("ReplicatedStorage")
+				:WaitForChild("Packages", 900)
+				:WaitForChild(string.gsub(Path, "KPM/", "")).init
+		)
 	end
 
 	if string.sub(Path, 1, string.len("Knight/Shared/")) == "Knight/Shared/" then
@@ -105,7 +121,7 @@ function Knight.Core.Import(Path)
 	if string.sub(Path, 1, string.len("Knight/Env/")) == "Knight/Env/" then
 		return Import(_G.Knight.API, Path, 14)
 	end
-	
+
 	if string.sub(Path, 1, string.len("Knight/Client/")) == "Knight/Client/" then
 		if RunService:IsServer() then
 			error("You cannot import on Knight/Client on the server.")
@@ -131,21 +147,27 @@ function Knight.Core.Import(Path)
 end
 
 function Knight.Core:GetShared()
-	return require(game:GetService("ReplicatedStorage"):WaitForChild("Knight").Init)
+	warn(
+		string.format(
+			"[Knight:%s:Error] Knight.Core:GetShared() is deprecated, please use Knight.Core:GetStorage(IsShared: boolean | nil).",
+			Knight.runType
+		)
+	)
+	return Knight.Core:GetStorage(true)
 end
 
-function Knight.Core:GetStorage(IsShared)
-	if IsShared == nil then IsShared = false end
-	if IsShared then return Knight.Core:GetShared() end
-
-	local context;
-
-	if RunService:IsServer() then
-		context = game:GetService("ServerStorage"):WaitForChild("Knight")
-	else
-		context = game:GetService("Players").LocalPlayer.PlayerScripts:WaitForChild("Knight")
+function Knight.Core:GetStorage(IsShared: boolean | nil)
+	if IsShared == nil then
+		IsShared = false
 	end
-	
+
+	local context = RunService:IsServer() and ServerStorage:WaitForChild("Knight")
+		or Players.LocalPlayer.PlayerScripts:WaitForChild("Knight")
+
+	if IsShared then
+		context = ReplicatedStorage:WaitForChild("Knight")
+	end
+
 	if not context:FindFirstChild("Init") then
 		local EnvironmentInit = script.EnvironmentInit:Clone()
 		EnvironmentInit.Name = "Init"
@@ -156,25 +178,43 @@ function Knight.Core:GetStorage(IsShared)
 end
 
 function Knight.Core:Init()
+	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("Init") then
+		local EnvironmentInit = script.EnvironmentInit:Clone()
+		EnvironmentInit.Name = "Init"
+		EnvironmentInit.Parent = ReplicatedStorage:WaitForChild("Knight")
+	end
+
 	local Storage = Knight.Core:GetStorage()
-	local RuntypeServices = Storage.InitKnight(Knight)
-	local Shared = Knight.Core:GetShared()(RuntypeServices, Knight)
-	
+	local RuntypeServices = Storage.InitKnight(false, Knight)
+	local Shared = RuntypeServices.Shared; -- Knight.Core:GetStorage(true).InitKnight(RuntypeServices, Knight)
+
 	_G.Knight = {}
 	_G.Knight.API = RuntypeServices
 	_G.Knight.Internal = Knight
-	_G.Knight.API.Shared = Shared;
-	
+	_G.Knight.API.Shared = Shared
+
 	return Knight, _G.Knight.API
 end
 
-function Knight.Core:GetService(ServiceName, IsShared)
+function Knight.Core:GetService(ServiceName: string, IsShared: boolean | nil)
+	if IsShared == nil then
+		IsShared = false
+	end
+
 	local Storage = Knight.Core:GetStorage()
 
 	if not Storage.Inited then
-		Knight.Core.Log("Warn", ServiceName .. " cannot be inited as it hasnt been started, " .. ServiceName .. " has been queued to return shortly.")
+		Knight.Core.Log(
+			"Warn",
+			ServiceName
+				.. " cannot be inited as it hasnt been started, "
+				.. ServiceName
+				.. " has been queued to return shortly."
+		)
 
-		repeat task.wait() until (Knight.Core:GetStorage(IsShared).Inited == true)
+		repeat
+			task.wait()
+		until Knight.Core:GetStorage(IsShared).Inited == true
 	end
 
 	return Storage.Services[ServiceName] or {}
