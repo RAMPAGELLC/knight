@@ -23,6 +23,8 @@ Required to install KPM modules.
 ### Knight Services Manager (KSM)
 Recommended tool to aid with managing services. KSM is a basic rough-draft, issues may occur.
 * https://create.roblox.com/marketplace/asset/13168343690/Knight-Services-Manager
+  
+### Knight Package Manager (KPM)
 * https://github.com/RAMPAGELLC/KnightPackageManager
 
 # License
