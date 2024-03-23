@@ -267,7 +267,7 @@ Knight.InitKnight = function(RuntypeServices: any, KnightInternal: any)
 
 			module.MemoryKBStart = module.GetMemoryUsageKB()
 
-			if module.Init ~= nil and typeof(module.Init) == "function" then
+			if module.Init ~= nil and typeof(module.Init) == "function" and module.CanUpdate == nil or (module.CanUpdate ~= nil and module.CanUpdate) then
 				local start, ok, state, errorReported = tick(), nil, nil, false
 
 				task.spawn(function()
@@ -345,7 +345,7 @@ Knight.InitKnight = function(RuntypeServices: any, KnightInternal: any)
 	end
 	
 	for moduleName: string | number, module: any in pairs(Services) do
-		if module.Start ~= nil and typeof(module.Start) == "function" then
+		if module.Start ~= nil and typeof(module.Start) == "function" and module.CanStart == nil or (module.CanStart ~= nil and module.CanStart) then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
