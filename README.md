@@ -3,6 +3,9 @@ Knight; The Roblox Game Framework. Knight is a robust framework to assist your n
 
 This is the barebones verison without additional software, if you want something with more starter modules check out the Knight Plus: https://github.com/RAMPAGELLC/KnightPlus
 
+> [!CAUTION]
+> 0.0.6-0.0.7 IS UNSTABLE AND NOT RECOMMENDED FOR PRODUCTION USAGE ANYMORE. 0.0.6-0.0.7 HAS ISSUES OUTLINED IN https://github.com/RAMPAGELLC/knight/issues/5.
+
 # Documentation
 https://knight.vq9o.com
 
