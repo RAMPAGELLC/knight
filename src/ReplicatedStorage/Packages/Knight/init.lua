@@ -28,7 +28,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Knight = {
 	["IsServer"] = RunService:IsServer(),
-	["Version"] = "<0.0.6-prod> KNIGHT FRAMEWORK on Roblox "
+	["Version"] = "<v0.0.7-dev> KNIGHT FRAMEWORK on Roblox "
 		.. (RunService:IsStudio() and "Studio" or "Experience")
 		.. " | Experience Version: "
 		.. version(),
@@ -153,6 +153,7 @@ function Knight.Core:GetShared()
 			Knight.runType
 		)
 	)
+	
 	return Knight.Core:GetStorage(true)
 end
 
@@ -174,7 +175,7 @@ function Knight.Core:GetStorage(IsShared: boolean | nil)
 		EnvironmentInit.Parent = context
 	end
 
-	return require(context.Init)
+	return require(context:WaitForChild("Init"))
 end
 
 function Knight.Core:Init()
@@ -185,39 +186,15 @@ function Knight.Core:Init()
 	end
 
 	local Storage = Knight.Core:GetStorage()
-	local RuntypeServices = Storage.InitKnight(false, Knight)
-	local Shared = RuntypeServices.Shared; -- Knight.Core:GetStorage(true).InitKnight(RuntypeServices, Knight)
+	local RuntypeServices = Storage.newKnightEnvironment(false, Knight)
+	local Shared = RuntypeServices.Shared
 
 	_G.Knight = {}
 	_G.Knight.API = RuntypeServices
-	_G.Knight.Internal = Knight
 	_G.Knight.API.Shared = Shared
+	_G.Knight.Internal = Knight
 
 	return Knight, _G.Knight.API
-end
-
-function Knight.Core:GetService(ServiceName: string, IsShared: boolean | nil)
-	if IsShared == nil then
-		IsShared = false
-	end
-
-	local Storage = Knight.Core:GetStorage()
-
-	if not Storage.Inited then
-		Knight.Core.Log(
-			"Warn",
-			ServiceName
-				.. " cannot be inited as it hasnt been started, "
-				.. ServiceName
-				.. " has been queued to return shortly."
-		)
-
-		repeat
-			task.wait()
-		until Knight.Core:GetStorage(IsShared).Inited == true
-	end
-
-	return Storage.Services[ServiceName] or {}
 end
 
 return Knight
