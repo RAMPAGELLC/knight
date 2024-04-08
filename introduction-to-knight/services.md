@@ -21,10 +21,8 @@ local Knight = {
 		Author = "vq9o",
 		Description = "Example Service example"
 	},
-	Config = {
-		CanStart = true,
-		CanUpdate = true,
-	}
+	CanStart = true,
+	CanUpdate = true,
 }
 
 function Knight.Init()
