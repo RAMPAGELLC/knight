@@ -18,10 +18,10 @@ Project Group
 
 {% embed url="https://www.roblox.com/games/12336113063/V2-The-Western-Frontier" %}
 
-<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Europaxc's CITY-22
 
 {% embed url="https://www.roblox.com/games/12434382005/CITY-22" %}
 
-<figure><img src=".gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>

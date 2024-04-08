@@ -2,7 +2,7 @@
 description: Knight Package functions
 ---
 
-# Knight
+# Introduction to Knight
 
 ## @Knight:PrintVersion()
 
@@ -16,7 +16,7 @@ Prints current Knight version
 
 ## @Knight.Core:Init()
 
-## @Knight.Core:GetService(ServiceName; required, IsShared; required)
+
 
 ```lua
 -- Required to init Knight on server & client.
