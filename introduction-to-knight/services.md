@@ -86,9 +86,7 @@ return Knight
 
 ## Config
 
-Within Knight you have abilities to define Config for additional modification to a service.
-
-CanStart & CanUpdate variable allow execution of the .Update() and .Start(). Useful if your using a third-party module and you need to disable Knight from calling its default start function like CameraShaker.
+CanStart, CanUpdate, CanInit variable allow execution of the .Update(), .Start(), and .Init(). Useful if your using a third-party module and you need to disable Knight from calling its default start function like CameraShaker.
 
 Config is not required and will default to true.
 
