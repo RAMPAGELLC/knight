@@ -23,4 +23,5 @@
   * [Knight:GetService()](introduction-to-knight/knight-getservice.md)
   * [Knight Import](introduction-to-knight/knight-import.md)
   * [Services](introduction-to-knight/services.md)
+  * [Startup Priority](introduction-to-knight/startup-priority.md)
   * [Optimization](introduction-to-knight/optimization.md)
