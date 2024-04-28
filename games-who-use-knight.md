@@ -8,17 +8,39 @@ Project group.
 
 <figure><img src=".gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
-### RAMPAGE Interactive's BATTLEFIELD
+### Skull Island
+
+{% embed url="https://www.roblox.com/games/16574913126/SEASON-1-Skull-Island" %}
+
+<figure><img src=".gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+
+### BATTLEFIELD Tech Demo
 
 {% embed url="https://www.roblox.com/groups/9640975/RAMPAGE-Interactive-LLC#!/about" %}
 Project Group
 {% endembed %}
 
-## RAMPAGE Interactive's Western Frontier
+## Blacksite Omega
+
+{% embed url="https://www.roblox.com/games/15366364939/Early-Access-Blacksite-Omega" %}
+
+<figure><img src=".gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+
+## The Western Frontier
 
 {% embed url="https://www.roblox.com/games/12336113063/V2-The-Western-Frontier" %}
 
 <figure><img src=".gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+## Canadian Roleplay
+
+{% embed url="https://www.roblox.com/games/9820168729/City-Of-Hamilton" %}
+
+<figure><img src=".gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+
+## Garsha's Undead West
+
+{% embed url="https://www.roblox.com/groups/34143700/Undead-West-x-RAMPAGE#!/about" %}
 
 ## Europaxc's CITY-22
 
