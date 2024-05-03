@@ -55,7 +55,7 @@ function Service:Fire(name: string, ...): void
 end
 
 function Service:FireAllNearby(name: string, position: Vector3, maxDistance: number | boolean, ...): void
-	if maxDistance == nil then
+	if typeof(maxDistance) == "boolean" then
 		maxDistance = 50
 	end
 
