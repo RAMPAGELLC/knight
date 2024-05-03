@@ -212,6 +212,10 @@ local function PackFramework(tab, folder)
 					end
 				end
 
+				if mod.Priority == nil then
+					mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil and Config.STARTUP_PRIORITY[child.Parent.Name] or 1;
+				end
+
 				Modules[name] = mod
 			end
 
@@ -276,6 +280,10 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 	else
 		Knight.KnightCache.UpdateEvent = Knight.Shared.Objects.Event.new()
 	end
+
+	table.sort(Modules, function(module1, module2)
+		return (module1.Priority or 1) < (module2.Priority or 1)
+	end)
 
 	-- Startup modules
 	for moduleName: any, module: any in pairs(Modules) do
