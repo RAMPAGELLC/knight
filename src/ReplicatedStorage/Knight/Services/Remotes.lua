@@ -1,3 +1,19 @@
+--[[
+ _   __      _       _     _   
+| | / /     (_)     | |   | |  
+| |/ / _ __  _  __ _| |__ | |_ 
+|    \| '_ \| |/ _` | '_ \| __|
+| |\  \ | | | | (_| | | | | |_ 
+\_| \_/_| |_|_|\__, |_| |_|\__|
+                __/ |          
+               |___/    
+ 
+ (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ Written by Metatable (@vq9o), Epicness and contributors.
+ License: MIT
+
+]]
+
 local Service = {
 	ServiceName = script.Name,
 	ServiceData = {
@@ -5,20 +21,29 @@ local Service = {
 		Description = "Remote Service for handling remotes across client and server.",
 	},
 }
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local Events = ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Events")
+
+local Knight = ReplicatedStorage:WaitForChild("Knight")
+
+local Events = Knight:FindFirstChild("Events") or Instance.new("Folder", Knight)
+Events.Name = "Events";
+
 export type void = nil
 
-local function GetRemote(name): RemoteFunction | RemoteEvent | BindableEvent | BindableFunction | boolean
-	local remote = game:GetService("ReplicatedStorage").Knight.Events:FindFirstChild(name)
+local function GetRemote(RemoteName: string): RemoteFunction | RemoteEvent | BindableEvent | BindableFunction | boolean
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
+	local remote = ReplicatedStorage.Knight.Events:FindFirstChild(RemoteName)
 
 	if not remote then
 		warn(
-			"Remote "
-				.. name
-				.. " was not found. Ensure you have a folder called 'Events' in the Knight Shared Folder, also ensure you register the remote with Knight or manually create it."
+			("Remote \"%s\" was not found. You must manually create the event or register it with the API."):format(
+				RemoteName
+			)
 		)
 		return false
 	end
@@ -26,8 +51,11 @@ local function GetRemote(name): RemoteFunction | RemoteEvent | BindableEvent | B
 	return remote
 end
 
-function Service:Fire(name: string, ...): void
-	local remote = GetRemote(name)
+function Service:Fire(RemoteName: string, ...): void
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
+	local remote = GetRemote(RemoteName)
 
 	if remote then
 		if RunService:IsServer() then
@@ -54,12 +82,21 @@ function Service:Fire(name: string, ...): void
 	end
 end
 
-function Service:FireAllNearby(name: string, position: Vector3, maxDistance: number | boolean, ...): void
+function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...): void
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
+	assert(position ~= nil, "[Knight:Remotes]: position is nil")
+	assert(typeof(position) == "Vector3", "[Knight:Remotes]: position must be a Vector3")
+
+	assert(maxDistance ~= nil, "[Knight:Remotes]: maxDistance is nil")
+	assert(typeof(maxDistance) == "number" or typeof(maxDistance) == "boolean", "[Knight:Remotes]: maxDistance must be a number or boolean.")
+
 	if typeof(maxDistance) == "boolean" then
 		maxDistance = 50
 	end
 
-	local remote = GetRemote(name)
+	local remote = GetRemote(RemoteName)
 
 	if remote then
 		for _, player in pairs(Players:GetPlayers()) do
@@ -68,22 +105,28 @@ function Service:FireAllNearby(name: string, position: Vector3, maxDistance: num
 			end
 
 			if (player.Character.PrimaryPart.Position - position).Magnitude < maxDistance then
-				Service:Fire(name, player, ...)
+				Service:Fire(RemoteName, player, ...)
 			end
 		end
 	end
 end
 
-function Service:FireAll(name: string, ...): void
-	local remote = GetRemote(name)
+function Service:FireAll(RemoteName: string, ...): void
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
+	local remote = GetRemote(RemoteName)
 
 	if remote and RunService:IsServer() and remote:IsA("RemoteEvent") then
 		remote:FireAllClients(...)
 	end
 end
 
-function Service:Connect(name: string, callback: () -> void | nil | boolean)
-	local remote = GetRemote(name)
+function Service:Connect(RemoteName: string, callback: () -> void | nil | boolean)
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
+	local remote = GetRemote(RemoteName)
 
 	if remote then
 		local signal
@@ -111,6 +154,9 @@ end
 -- @Knight.Shared.Services.Remotes:Unregister(string: Remote Name)
 -- returns boolean on success or not
 function Service:Unregister(RemoteName: string)
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+
 	if not Events:FindFirstChild(RemoteName) then
 		return
 	end
@@ -121,6 +167,12 @@ end
 -- @Knight.Shared.Services.Remotes:Register(string: Remote Name, string: RemoteClass (RemoteEvent, RemoteFunction), function: callback)
 -- returns connection from shared services.
 function Service:Register(RemoteName: string, RemoteClass: string, Callback: any)
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(RemoteClass ~= nil, "[Knight:Remotes]: RemoteClass is nil")
+
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+	assert(typeof(RemoteClass) == "string", "[Knight:Remotes]: RemoteClass must be a string")
+
 	if Events:FindFirstChild(RemoteName) then
 		warn(RemoteName, " is already registered")
 		return
