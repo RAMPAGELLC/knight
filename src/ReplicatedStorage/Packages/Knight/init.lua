@@ -28,7 +28,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Knight = {
 	["IsServer"] = RunService:IsServer(),
-	["Version"] = "<v0.0.7-dev> KNIGHT FRAMEWORK on Roblox "
+	["Version"] = "<v0.0.8-dev> KNIGHT FRAMEWORK on Roblox "
 		.. (RunService:IsStudio() and "Studio" or "Experience")
 		.. " | Experience Version: "
 		.. version(),
@@ -153,7 +153,7 @@ function Knight.Core:GetShared()
 			Knight.runType
 		)
 	)
-	
+
 	return Knight.Core:GetStorage(true)
 end
 
