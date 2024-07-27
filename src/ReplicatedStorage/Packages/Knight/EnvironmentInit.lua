@@ -383,6 +383,18 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 		end
 	end
 
+	if Knight.util == nil then
+		warn(
+			string.format(
+				"[Knight:%s:Error] KnightLibrary.util.lua does not exist. The Knight library util is required!",
+				sRuntype
+			)
+		)
+		return Shutdown(true)
+	end
+
+	Config = Knight.util.SyncTable(Config, require(KnightPackage:WaitForChild("latest_config")))
+
 	Knight.GetService = function(ServiceName: string): any
 		local Service = script.Parent:FindFirstChild(ServiceName, true)
 
