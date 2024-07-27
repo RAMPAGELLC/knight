@@ -29,6 +29,11 @@ return function (manifest: table?): boolean?
 
     for i,v in pairs(required_props) do
         assert(manifest[i] ~= nil, "[Knight:Internal]: Failed to validate 'manifest.lua', Missing required manifest property.")
+
+        if manifest[i] ~= "table" then
+            continue;
+        end
+        
         assert(table.find(manifest[i], typeof(v)) "[Knight:Internal]: Failed to validate 'manifest.lua', Exepected valid input type.")
     end
 
