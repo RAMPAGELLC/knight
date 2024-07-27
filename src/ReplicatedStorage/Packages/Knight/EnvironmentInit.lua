@@ -607,7 +607,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			sRuntype,
 			isShared and "Shared" or runType,
 			tostring(tick() - Knight.initStart),
-			debug.traceback()
+			Config.TRACKBACK_ON_STARTUP_TOOK_TOO_LONG and debug.traceback() or ""
 		)
 	)
 
