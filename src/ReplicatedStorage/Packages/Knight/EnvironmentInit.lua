@@ -359,6 +359,18 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			continue
 		end
 
+		if typeof(mod) == "string" then
+			warn(
+				string.format(
+					"[Knight:%s:Error] Failed to import library KnightLibrary.%s.lua due to: Manifest is a 'string', expected 'table'.",
+					runType,
+					library.Name
+				)
+			)
+
+			continue
+		end
+
 		if manifestAPI.Validate(mod) == nil then
 			warn(
 				string.format(
