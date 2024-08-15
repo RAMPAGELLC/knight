@@ -1,10 +1,6 @@
----
-description: >-
-  Knight Framework is a lightweight Roblox Framework to help simplify
-  development on Roblox, with a connection between all scripts.
----
-
 # About
+
+Knight is a comprehensive Luau-based framework for Roblox game development that allows for the structured creation of server-side, client-side, and shared code. This framework promotes clean code organization and scalable development practices, making it easier to manage complex game logic.
 
 ## Why choose Knight
 

@@ -8,6 +8,18 @@ Project group.
 
 <figure><img src=".gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
 
+### Apollo Bay
+
+{% embed url="https://www.roblox.com/groups/32462483/Apollo-Bay#!/about" %}
+
+<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+### Emergency Response: UK
+
+{% embed url="https://www.roblox.com/games/18903710138/Emergency-Response-UK" %}
+
+<figure><img src=".gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
 ### Skull Island
 
 {% embed url="https://www.roblox.com/games/16574913126/SEASON-1-Skull-Island" %}
@@ -30,7 +42,7 @@ Project Group
 
 {% embed url="https://www.roblox.com/games/12336113063/V2-The-Western-Frontier" %}
 
-<figure><img src=".gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Canadian Roleplay
 
@@ -46,4 +58,4 @@ Project Group
 
 {% embed url="https://www.roblox.com/games/12434382005/CITY-22" %}
 
-<figure><img src=".gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
