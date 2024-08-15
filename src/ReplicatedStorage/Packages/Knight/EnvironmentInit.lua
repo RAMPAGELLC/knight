@@ -83,7 +83,8 @@ local function Shutdown(DoNotReport: boolean | nil)
 				or string.format(errorString, tostring(i), ReportID)
 			task.wait(1)
 		end
-		--Players.LocalPlayer:Kick("Knight framework error occured.")
+		
+		Players.LocalPlayer:Kick("Knight framework error occured.")
 	else
 		local function p(v)
 			local ScreenGui = Instance.new("ScreenGui")
@@ -109,7 +110,7 @@ local function Shutdown(DoNotReport: boolean | nil)
 				task.wait(1)
 			end
 
-			--	v:Kick("Knight framework error occured.")
+			v:Kick("Knight framework error occured.")
 		end
 
 		for i, v in pairs(Players:GetPlayers()) do
