@@ -1,3 +1,23 @@
+--[[
+ _   __      _       _     _   
+| | / /     (_)     | |   | |  
+| |/ / _ __  _  __ _| |__ | |_ 
+|    \| '_ \| |/ _` | '_ \| __|
+| |\  \ | | | | (_| | | | | |_ 
+\_| \_/_| |_|_|\__, |_| |_|\__|
+                __/ |          
+               |___/    
+ 
+ (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ Written by Metatable (@vq9o), Epicness and contributors.
+ License: MIT
+ 
+ Repository: https://github.com/RAMPAGELLC/knight
+ Documentation: https://knight.vq9o.com
+]]
+
+-- TODO: A massive code cleanup is required.
+
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -8,6 +28,9 @@ local Modules = {}
 
 local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
+
+local KnightPackage = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knight")
+local manifestAPI = require(KnightPackage:WaitForChild("manifest"))
 local Config = require(ReplicatedStorage:WaitForChild("KNIGHT_CONFIG"))
 
 local initCanceled = false
@@ -25,7 +48,9 @@ local function Shutdown(DoNotReport: boolean | nil)
 	end
 
 	initCanceled = true
+
 	warn("[Knight:Error] Framework failed to load, a code review is required!", debug.traceback())
+
 	if RunService:IsStudio() then
 		warn("Report Knight framework issues at https://github.com/RAMPAGELLC/knight.")
 	else
@@ -200,20 +225,22 @@ local function PackFramework(tab, folder)
 						mod[k] = v
 					end
 				else
-					mod["Player"] = Knight.Player;
-					mod["Enum"] = Knight.Enum;
-					mod["initStart"] = Knight.initStart;
-					mod["Inited"] = Knight.Inited;
-					mod["KnightCache"] = Knight.KnightCache;
-					mod["GetService"] = Knight.GetService;
+					mod["Player"] = Knight.Player
+					mod["Enum"] = Knight.Enum
+					mod["initStart"] = Knight.initStart
+					mod["Inited"] = Knight.Inited
+					mod["KnightCache"] = Knight.KnightCache
+					mod["GetService"] = Knight.GetService
 
 					if Config.KEEP_SHARED_ON_CYCLIC_DISABLE then
-						mod["Shared"] = Knight.Shared;
+						mod["Shared"] = Knight.Shared
 					end
 				end
 
 				if mod.Priority == nil then
-					mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil and Config.STARTUP_PRIORITY[child.Parent.Name] or 1;
+					mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil
+							and Config.STARTUP_PRIORITY[child.Parent.Name]
+						or 1
 				end
 
 				Modules[name] = mod
@@ -235,10 +262,17 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 
 	-- Setup Knight Dictionary
 	Knight.Shared = not isShared
-			and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Init")).newKnightEnvironment(true, KnightInternal)
+			and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Init")).newKnightEnvironment(
+				true,
+				KnightInternal
+			)
 		or {}
 	Knight.Inited = false
 	Knight.initStart = tick()
+	Knight.Enum = require(ReplicatedStorage:WaitForChild("KNIGHT_ENUM"))
+	Knight.Player = RunService:IsClient() and Players.LocalPlayer or false
+	Knight.Internal = KnightInternal
+	Knight.KnightCache = { UpdateEvent = nil }
 	Knight.Remotes = ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("Remotes", true)
 
 	if Knight.Remotes ~= nil and Knight.Remotes:IsA("ModuleScript") then
@@ -252,28 +286,141 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 		)
 	end
 
-	Knight.Const = require(ReplicatedStorage:WaitForChild("Constants"):WaitForChild("Global"))
-	Knight.Enum = require(ReplicatedStorage:WaitForChild("KNIGHT_ENUM"))
-	Knight.Player = RunService:IsClient() and Players.LocalPlayer or false
-	Knight.Internal = KnightInternal
-	Knight.KnightCache = { UpdateEvent = nil }
+	for _, library: Folder in pairs(KnightPackage:WaitForChild("library"):GetChildren()) do
+		local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
+		local manifest = library:FindFirstChild("manifest")
+
+		if not manifest then
+			warn(
+				string.format(
+					"[Knight:%s:Info] Failed to import library %s as it does not contain a 'manifest.lua'.",
+					sRuntype,
+					library.Name
+				)
+			)
+			continue
+		end
+
+		if not manifest:IsA("ModuleScript") then
+			warn(
+				string.format(
+					"[Knight:%s:Info] Failed to import library %s as manifest is not a ModuleScript.",
+					sRuntype,
+					library.Name
+				)
+			)
+			continue
+		end
+
+		task.spawn(function()
+			moduleResult = table.pack(pcall(require, manifest))
+		end)
+
+		if moduleResult == nil then
+			while moduleResult == nil and task.wait() do
+				if (tick() - moduleStart) >= 20 and not moduleStartupError then
+					warn(
+						string.format(
+							"[Knight:%s:Warning] KnightLibrary.%s.lua is taking too long to startup.",
+							runType,
+							library.Name
+						)
+					)
+					moduleStartupError = true
+				end
+			end
+		end
+
+		if Config.LOG_STARTUP_INFO or moduleStartupError then
+			print(
+				string.format(
+					"[Knight:%s:Info] KnightLibrary.%s.lua has loaded after %s second(s).",
+					runType,
+					library.Name,
+					tostring(tick() - moduleStart)
+				)
+			)
+		end
+
+		local success, mod = table.unpack(moduleResult)
+
+		if not success then
+			warn(
+				string.format(
+					"[Knight:%s:Error] Failed to import library KnightLibrary.%s.lua due to: %s.",
+					runType,
+					library.Name,
+					mod
+				)
+			)
+
+			continue
+		end
+
+		if manifestAPI.Validate(mod) == nil then
+			warn(
+				string.format(
+					"[Knight:%s:Error] Failed to import library KnightLibrary.%s.lua due to: Manifest error.",
+					runType,
+					library.Name
+				)
+			)
+
+			continue
+		end
+
+		-- Not allowed runtime.
+		if mod.runtime ~= "Shared" and mod.runtime ~= runType then
+			continue
+		end
+
+		if Knight[mod.library_name] ~= nil then
+			warn(
+				string.format(
+					"[Knight:%s:Error] Failed to import library KnightLibrary.%s.lua due to: Something is already registered within Knight as %s.",
+					runType,
+					library.Name,
+					mod.library_name
+				)
+			)
+			continue
+		end
+
+		Knight[mod.library_name] = require(mod.src)
+
+		if Config.LOG_STARTUP_INFO then
+			print(
+				string.format(
+					"[Knight:%s:Log] Library KnightLibrary.%s.lua has been imported to environment.",
+					runType,
+					library.Name
+				)
+			)
+		end
+	end
+
+	if Knight.util == nil then
+		warn(
+			string.format(
+				"[Knight:%s:Error] KnightLibrary.util.lua does not exist. The Knight library util is required!",
+				sRuntype
+			)
+		)
+		return Shutdown(true)
+	end
+
+	Config = Knight.util.SyncTable(Config, require(KnightPackage:WaitForChild("latest_config")))
 
 	Knight.GetService = function(ServiceName: string): any
 		local Service = script.Parent:FindFirstChild(ServiceName, true)
 
 		if not Service or (Service ~= nil and Modules[ServiceName] == nil) then
-			warn(
-				string.format(
-					"[Knight:%s:Info] %s is not a valid service.",
-					sRuntype,
-					ServiceName
-				)
-			)
-		
-			return nil;
+			warn(string.format("[Knight:%s:Info] %s is not a valid service.", sRuntype, ServiceName))
+
+			return nil
 		end
 
-		return Modules[ServiceName];
+		return Modules[ServiceName]
 	end
 
 	-- Load contents fully
@@ -469,12 +616,14 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 
 	if Knight.KnightCache ~= nil then
 		RunService.Heartbeat:Connect(function(deltaTime)
-			if Knight.KnightCache.UpdateEvent == nil then return; end
+			if Knight.KnightCache.UpdateEvent == nil then
+				return
+			end
 			Knight.KnightCache.UpdateEvent:Fire(deltaTime)
 		end)
 	end
 
-	Knight.Inited = true;
+	Knight.Inited = true
 
 	print(
 		string.format(
@@ -482,7 +631,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			sRuntype,
 			isShared and "Shared" or runType,
 			tostring(tick() - Knight.initStart),
-			debug.traceback()
+			Config.TRACKBACK_ON_STARTUP_TOOK_TOO_LONG and debug.traceback() or ""
 		)
 	)
 
