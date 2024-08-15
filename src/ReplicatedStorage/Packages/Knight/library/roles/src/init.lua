@@ -5,6 +5,17 @@
 -- GitHub: https://github.com/RAMPAGELLC/RBLXRolesAPI
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+if not ReplicatedStorage:FindFirstChild("Constants") then
+	warn("Failed to load library 'roles', package requires missing external config.")
+	return {};
+end
+
+if not ReplicatedStorage:FindFirstChild("Constants"):FindFirstChild("Config") then
+	warn("Failed to load library 'roles', package requires missing external config.")
+	return {};
+end
+
 local Config = require(ReplicatedStorage.Constants.Config)
 
 export type RoleName = string
