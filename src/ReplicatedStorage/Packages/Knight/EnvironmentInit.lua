@@ -19,6 +19,7 @@
 -- TODO: A massive code cleanup is required.
 
 local CollectionService = game:GetService("CollectionService")
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -57,7 +58,7 @@ local function Shutdown(DoNotReport: boolean | nil)
 		warn("Report code issues to the experience developer's please.")
 	end
 
-	local ReportID = "Idk something"
+	local ReportID = HttpService:GenerateGUID(false)
 
 	if IsClient then
 		local ScreenGui = Instance.new("ScreenGui")
