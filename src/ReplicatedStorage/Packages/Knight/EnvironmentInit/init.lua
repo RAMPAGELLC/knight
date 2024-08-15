@@ -27,21 +27,18 @@ local Players = game:GetService("Players")
 local Knight = {}
 local Modules = {}
 
+local initCanceled: boolean = false
 local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
 
 local KnightPackage = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knight")
+
+local Maid = require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Objects"):WaitForChild("Maid"))
 local manifestAPI = require(KnightPackage:WaitForChild("manifest"))
 local Config = require(ReplicatedStorage:WaitForChild("KNIGHT_CONFIG"))
 
-local initCanceled = false
-
-local errorString =
-	[[<b><font size="130" face="GothamBold">An error occured</font></b><font face="GothamMedium" size="35"><br /> A error occured within the Knight Framework. This issue has been automatically reported based on the experience privacy settings, however please report this to the experience developer(s). You will be disconnected in <b>%s</b> seconds.</font> <br /><br /><br /><font face="GothamMedium" size="35">KNIGHT ERROR REPORT REFERENCE ID:</font><br /><font face="Jura" size="55">%s</font>]]
-local errorString2 =
-	[[<b><font size="130" face="GothamBold">An error occured</font></b><font face="GothamMedium" size="35"><br /> A error occured within the Knight Framework. This issue originated from a custom-class, please report this to the experience developer(s). You will be disconnected in <b>%s</b> seconds.</font>]]
-
-export type KnightInternal = any -- to-be-done.
+local Types = require(script:WaitForChild("Types"))
+local InternalConfig = require(script:WaitForChild("InternalConfig"))
 
 local function Shutdown(DoNotReport: boolean | nil)
 	if DoNotReport == nil then
@@ -72,18 +69,18 @@ local function Shutdown(DoNotReport: boolean | nil)
 		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		TextLabel.Parent = ScreenGui
 		TextLabel.BackgroundColor3 = Color3.fromRGB(93, 34, 34)
-		TextLabel.Text = DoNotReport and errorString2:format(tostring(Config.SHUTDOWN_KICK_DELAY))
-			or string.format(errorString, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
+		TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(Config.SHUTDOWN_KICK_DELAY))
+			or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
 		TextLabel.Size = UDim2.new(1, 0, 1, 0)
 		TextLabel.Visible = true
 		TextLabel.BackgroundTransparency = 0.7
 
 		for i = Config.SHUTDOWN_KICK_DELAY, 1, -1 do
-			TextLabel.Text = DoNotReport and errorString2:format(tostring(i))
-				or string.format(errorString, tostring(i), ReportID)
+			TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(i))
+				or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(i), ReportID)
 			task.wait(1)
 		end
-		
+
 		Players.LocalPlayer:Kick("Knight framework error occured.")
 	else
 		local function p(v)
@@ -98,15 +95,16 @@ local function Shutdown(DoNotReport: boolean | nil)
 			TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			TextLabel.Parent = ScreenGui
 			TextLabel.BackgroundColor3 = Color3.fromRGB(93, 34, 34)
-			TextLabel.Text = DoNotReport and errorString2:format(tostring(Config.SHUTDOWN_KICK_DELAY))
-				or string.format(errorString, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
+			TextLabel.Text = DoNotReport
+					and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(Config.SHUTDOWN_KICK_DELAY))
+				or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
 			TextLabel.Size = UDim2.new(1, 0, 1, 0)
 			TextLabel.Visible = true
 			TextLabel.BackgroundTransparency = 0.7
 
 			for i = Config.SHUTDOWN_KICK_DELAY, 1, -1 do
-				TextLabel.Text = DoNotReport and errorString2:format(tostring(i))
-					or string.format(errorString, tostring(i), ReportID)
+				TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(i))
+					or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(i), ReportID)
 				task.wait(1)
 			end
 
@@ -189,7 +187,7 @@ local function PackFramework(tab, folder)
 						"[Knight:%s:Info] %s.lua has loaded after %s second(s).",
 						runType,
 						child.Name,
-						tostring(tick() - moduleStart)
+						tostring(math.floor(tick() - moduleStart))
 					)
 				)
 			end
@@ -226,13 +224,12 @@ local function PackFramework(tab, folder)
 
 						mod[k] = v
 					end
-				else
-					mod["Player"] = Knight.Player
-					mod["Enum"] = Knight.Enum
-					mod["initStart"] = Knight.initStart
-					mod["Inited"] = Knight.Inited
-					mod["KnightCache"] = Knight.KnightCache
-					mod["GetService"] = Knight.GetService
+				end
+
+				if not Config.CYCLIC_INDEXING_ENABLED then
+					for i, v in pairs(InternalConfig.CYCLIC_DISABLE_KEEP_INDEX) do
+						mod[v] = Knight[v]
+					end
 
 					if Config.KEEP_SHARED_ON_CYCLIC_DISABLE then
 						mod["Shared"] = Knight.Shared
@@ -242,7 +239,7 @@ local function PackFramework(tab, folder)
 				if mod.Priority == nil then
 					mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil
 							and Config.STARTUP_PRIORITY[child.Parent.Name]
-						or 1
+						or InternalConfig.DEFAULT_STARTUP_PRIORITY
 				end
 
 				Modules[name] = mod
@@ -259,7 +256,7 @@ local function PackFramework(tab, folder)
 	return tab
 end
 
-Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: KnightInternal)
+Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.KnightInternal)
 	local sRuntype = isShared and ("Shared:%s"):format(runType) or runType
 
 	-- Setup Knight Dictionary
@@ -306,7 +303,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 		if not manifest:IsA("ModuleScript") then
 			warn(
 				string.format(
-					"[Knight:%s:Info] Failed to import library %s as manifest is not a ModuleScript.",
+					"[Knight:%s:Info] Failed to import library %s as manifest is not a 'ModuleScript'.",
 					sRuntype,
 					library.Name
 				)
@@ -339,7 +336,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 					"[Knight:%s:Info] KnightLibrary.%s.lua has loaded after %s second(s).",
 					runType,
 					library.Name,
-					tostring(tick() - moduleStart)
+					tostring(math.floor(tick() - moduleStart))
 				)
 			)
 		end
@@ -463,16 +460,23 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 	-- Startup modules
 	for moduleName: any, module: any in pairs(Modules) do
 		module.moduleStart = tick()
+		module.internalMaid = Maid.new()
+
 		module.GetMemoryUsageKB = function()
 			return gcinfo()
 		end
 
 		module.Unload = function()
-			module = nil
-			print(string.format("%s.lua knight service has been stopped.", moduleName))
+			if module.internalMaid ~= nil then
+				module.internalMaid:DoCleaning()
+			end
+
+			warn(string.format("%s.lua knight service has been stopped via 'Service.Unload()'.", moduleName))
+			module = nil;
 		end
 
 		module.MemoryKBStart = module.GetMemoryUsageKB()
+
 		module.CanInit = module.CanInit ~= nil and module.CanInit or true
 		module.CanUpdate = module.CanUpdate ~= nil and module.CanUpdate or true
 		module.CanStart = module.CanStart ~= nil and module.CanStart or true
@@ -541,7 +545,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 		end
 
 		if module.Update ~= nil and typeof(module.Update) == "function" and module.CanUpdate then
-			--	Knight.KnightCache.UpdateEvent:Connect(module.Update)
+			module.internalMaid:GiveTask(Knight.KnightCache.UpdateEvent:Connect(module.Update))
 		end
 
 		if Config.LOG_STARTUP_INFO then
@@ -550,7 +554,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 					"[Knight:%s:Info] %s.lua took %s second(s) to load completely.",
 					sRuntype,
 					moduleName,
-					tostring(tick() - module.moduleStart)
+					tostring(math.floor(tick() - module.moduleStart))
 				)
 			)
 		end
@@ -571,7 +575,8 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 
 			while ok == nil and task.wait() do
 				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
-					errorReported = true
+					errorReported = true;
+
 					warn(
 						string.format(
 							"[Knight:%s:Warning] %s.lua is taking too long to run Service.Start().",
@@ -589,6 +594,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 							moduleName
 						)
 					)
+
 					break
 				end
 			end
@@ -599,7 +605,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 						"[Knight:%s:Info] %s.lua Start() function completed after %s second(s).",
 						sRuntype,
 						moduleName,
-						tostring(tick() - start)
+						tostring(math.floor(tick() - start))
 					)
 				)
 			end
@@ -607,6 +613,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			if not ok and state == nil then
 				state = "UNKNOWN"
 			end
+
 			if not ok and Config.DO_NOT_WAIT then
 				ok = true
 			end
@@ -633,6 +640,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			if Knight.KnightCache.UpdateEvent == nil then
 				return
 			end
+
 			Knight.KnightCache.UpdateEvent:Fire(deltaTime)
 		end)
 	end
@@ -644,7 +652,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Knight
 			"[Knight:%s:Info] %s.Knight.Init.lua took %s to startup. %s",
 			sRuntype,
 			isShared and "Shared" or runType,
-			tostring(tick() - Knight.initStart),
+			tostring(math.floor(tick() - Knight.initStart)),
 			Config.TRACKBACK_ON_STARTUP_TOOK_TOO_LONG and debug.traceback() or ""
 		)
 	)
