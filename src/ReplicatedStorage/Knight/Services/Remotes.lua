@@ -12,13 +12,21 @@
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
- Usage:
+ Remotes Usage:
  local Remotes = require(to.remotes/)
-  Remotes:Fire(RemoteName: string, ...) -> void
-  Remotes:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...) -> void
-  Remotes:FireAll(RemoteName: string, ...) -> void
-  Remotes:Connect(RemoteName: string, callback: () -> void | nil | boolean) -> void
-  Remotes:Register(RemoteName: string, RemoteClass: string, Callback: any) -> void
+	Remotes:GetAsync(RemoteName: string) -> await RemoteAPI
+		yields thread until recives RemoteAPI successfully.
+	Remotes:Get(RemoteName: string) -> RemoteAPI | boolean
+	Remotes:Fire(RemoteName: string, ...) -> (any...)
+	Remotes:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...) -> (any...)
+	Remotes:FireAll(RemoteName: string, ...) -> (any...)
+	Remotes:Connect(RemoteName: string, callback: () -> void | nil | boolean) -> void
+	Remotes:Register(RemoteName: string, RemoteClass: string, Callback: any) -> void
+
+RemoteAPI Usage (Recieved from Get/GetAsync):
+	RemoteAPI:Fire(...) -> (any...)
+	RemoteAPI:FireAll(...) -> (any...)
+	RemoteAPI:FireAllNearby(position: Vector3, maxDistance: number | boolean, ...) -> (any...)
 ]]
 
 local Service = {
@@ -28,6 +36,7 @@ local Service = {
 		Description = "Remote Service for handling remotes across client and server.",
 	},
 	AutoRegisterIfDoesNotExist = true, -- Server :Fire() only. RemoteFunction is default. Useless unless client connects AFTER auto-creation.
+	RemoteAPICache = {}
 }
 
 local Players = game:GetService("Players")
@@ -35,13 +44,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Knight = ReplicatedStorage:WaitForChild("Knight")
+local Maid = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Maid"))
 
 local Events = Knight:FindFirstChild("Events") or Instance.new("Folder", Knight)
 Events.Name = "Events"
 
+export type KnightRemote = RemoteFunction | RemoteEvent | UnreliableRemoteEvent | BindableEvent | BindableFunction;
 export type void = nil
+export type RemoteAPI = {
+	Destroy: () -> void;
+}
 
-local function GetRemote(RemoteName: string): RemoteFunction | RemoteEvent | UnreliableRemoteEvent | BindableEvent | BindableFunction | boolean
+local function GetRemote(RemoteName: string): KnightRemote | boolean
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -63,7 +77,81 @@ local function GetRemote(RemoteName: string): RemoteFunction | RemoteEvent | Unr
 	return remote
 end
 
-function Service:Fire(RemoteName: string, ...): void
+local RemoteAPI = {}
+RemoteAPI.__index = RemoteAPI
+
+function RemoteAPI.new(Remote: KnightRemote)
+	local self = setmetatable({}, RemoteAPI)
+
+	self.Maid = Maid.new()
+	self.Remote = Remote;
+	self.RemoteName= self.Remote.Name;
+
+	self.Maid:GiveTask(self.Remote.Destroying:Connect(function()
+		return self:Destroy();
+	end))
+
+	return self;
+end
+
+function RemoteAPI:FireAllNearby(...): (any...)
+	return Service:FireAllNearby(self.RemoteName, ...)
+end
+
+function RemoteAPI:FireAll(...): (any...)
+	return Service:FireAll(self.RemoteName, ...)
+end
+
+function RemoteAPI:Fire(...): (any...)
+	return Service:Fire(self.RemoteName, ...)
+end
+
+function RemoteAPI:Destroy()
+	Service.RemoteAPICache[self.RemoteName] = nil;
+	self = nil;	
+end
+
+function Service:GetAsync(RemoteName: string): RemoteAPI | boolean
+	repeat
+		task.wait(.1)
+	until typeof(Service:Get(RemoteName) ~= "boolean")
+
+	return Service:Get(RemoteName);
+end
+
+function Service:Get(RemoteName: string, SilenceWarnings: boolean?): RemoteAPI | boolean
+	if Service.RemoteAPICache[RemoteName] ~= nil then
+		return Service.RemoteAPICache[RemoteName];
+	end
+
+	if SilenceWarnings == nil then
+		SilenceWarnings = false
+	end
+
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+	assert(typeof(SilenceWarnings) == "boolean", "[Knight:Remotes]: SilenceWarnings must be a boolean")
+
+	local remote: Instance | boolean = GetRemote(RemoteName)
+
+	if typeof(remote) == "boolean" then
+		warn(string.format("[Knight:Remotes]: '%s' event is not registered, Remotes:Get() will now throw a boolean!", RemoteName))
+		return false
+	end
+
+	Service.RemoteAPICache[RemoteName] = RemoteAPI.new(remote);
+
+	return Service.RemoteAPICache[RemoteName];
+end
+
+function Service:IsRegistered(RemoteName: string): boolean
+	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
+	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
+	
+	return typeof(GetRemote(RemoteName)) ~= "boolean"
+end
+
+function Service:Fire(RemoteName: string, ...): (any...)
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -131,7 +219,7 @@ function Service:Fire(RemoteName: string, ...): void
 	end
 end
 
-function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...): void
+function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...): (any...)
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -160,7 +248,7 @@ function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistanc
 	end
 end
 
-function Service:FireAll(RemoteName: string, ...): void
+function Service:FireAll(RemoteName: string, ...): (any...)
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -171,7 +259,7 @@ function Service:FireAll(RemoteName: string, ...): void
 	end
 end
 
-function Service:Connect(RemoteName: string, callback: () -> void | nil | boolean): void
+function Service:Connect(RemoteName: string, callback: (any...) -> void | nil | boolean): void
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
