@@ -27,6 +27,7 @@ RemoteAPI Usage (Recieved from Get/GetAsync):
 	RemoteAPI:Fire(...) -> (any...)
 	RemoteAPI:FireAll(...) -> (any...)
 	RemoteAPI:FireAllNearby(position: Vector3, maxDistance: number | boolean, ...) -> (any...)
+	RemoteAPI:Destroy()
 ]]
 
 local Service = {
@@ -53,6 +54,9 @@ export type KnightRemote = RemoteFunction | RemoteEvent | UnreliableRemoteEvent 
 export type void = nil
 export type RemoteAPI = {
 	Destroy: () -> void;
+	Fire: (any...) -> (any...);
+	FireAll: (any...) -> (any...);
+	FireAllNearby: (Vector3, number | boolean, any...) -> (any...);
 }
 
 local function GetRemote(RemoteName: string): KnightRemote | boolean
