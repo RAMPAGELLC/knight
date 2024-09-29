@@ -460,36 +460,35 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		return (module1.Priority or 1) < (module2.Priority or 1)
 	end)
 
-	-- Startup modules
+	-- Prepare modules
 	for moduleName: any, module: any in pairs(Modules) do
-		module.moduleStart = tick()
-		module.internalMaid = Maid.new()
+		Modules[moduleName].moduleStart = tick()
+		Modules[moduleName].internalMaid = Maid.new()
 
-		module.GetMemoryUsageKB = function()
+		Modules[moduleName].GetMemoryUsageKB = function()
 			return gcinfo()
 		end
 
-		module.Unload = function()
-			if module.internalMaid ~= nil then
-				module.internalMaid:DoCleaning()
+		Modules[moduleName].Unload = function()
+			if Modules[moduleName].internalMaid ~= nil then
+				Modules[moduleName].internalMaid:DoCleaning()
 			end
 
 			warn(string.format("%s.lua knight service has been stopped via 'Service.Unload()'.", moduleName))
-			module = nil;
+			Modules[moduleName] = nil;
 		end
 
-		module.MemoryKBStart = module.GetMemoryUsageKB()
-
-		module.CanInit = module.CanInit ~= nil and module.CanInit or true
-		module.CanUpdate = module.CanUpdate ~= nil and module.CanUpdate or true
-		module.CanStart = module.CanStart ~= nil and module.CanStart or true
+		Modules[moduleName].MemoryKBStart = Modules[moduleName].GetMemoryUsageKB()
+		Modules[moduleName].CanInit = Modules[moduleName].CanInit ~= nil and Modules[moduleName].CanInit or true
+		Modules[moduleName].CanUpdate = Modules[moduleName].CanUpdate ~= nil and Modules[moduleName].CanUpdate or true
+		Modules[moduleName].CanStart = Modules[moduleName].CanStart ~= nil and Modules[moduleName].CanStart or true
 
 		if type(module.Server) ~= "table" then
-			module.Server = {}
+			Modules[moduleName].Server = {}
 		end
 
 		if type(module.Client) ~= "table" then
-			module.Client = {}
+			Modules[moduleName].Client = {}
 		end
 		
 		if not isShared and RunService:IsClient() then
@@ -515,11 +514,11 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				return setmetatable({}, RCE);
 			end
 
-			module.Server = setmetatable({}, ServerRCE);
+			Modules[moduleName].Server = setmetatable({}, ServerRCE);
 		end
 
 		if not isShared and RunService:IsServer() then
-			for EventName: string, EventFunction in pairs(module.Client) do
+			for EventName: string, EventFunction in pairs(Modules[moduleName].Client) do
 				if typeof(EventFunction) ~= "function" then
 					continue;
 				end
@@ -527,14 +526,17 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				Knight.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", EventFunction)
 			end
 		else
-			module.Client = {};
+			Modules[moduleName].Client = {};
 		end
+	end
 
-		if module.Init ~= nil and typeof(module.Init) == "function" and module.CanInit then
+	-- Startup modules
+	for moduleName: any, module: any in pairs(Modules) do
+		if Modules[moduleName].Init ~= nil and typeof(Modules[moduleName].Init) == "function" and Modules[moduleName].CanInit then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = pcall(module.Init)
+				ok, state = pcall(Modules[moduleName].Init)
 			end)
 
 			while ok == nil and task.wait() do
@@ -579,6 +581,8 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				ok = true
 			end
 
+			Modules[moduleName].Init = nil;
+
 			if not ok then
 				warn(
 					string.format(
@@ -593,8 +597,8 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			end
 		end
 
-		if module.Update ~= nil and typeof(module.Update) == "function" and module.CanUpdate then
-			module.internalMaid:GiveTask(Knight.KnightCache.UpdateEvent:Connect(module.Update))
+		if Modules[moduleName].Update ~= nil and typeof(Modules[moduleName].Update) == "function" and Modules[moduleName].CanUpdate then
+			Modules[moduleName].internalMaid:GiveTask(Knight.KnightCache.UpdateEvent:Connect(Modules[moduleName].Update))
 		end
 
 		if Config.LOG_STARTUP_INFO then
@@ -603,7 +607,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 					"[Knight:%s:Info] %s.lua took %s second(s) to load completely.",
 					sRuntype,
 					moduleName,
-					tostring(math.floor(tick() - module.moduleStart))
+					tostring(math.floor(tick() - Modules[moduleName].moduleStart))
 				)
 			)
 		end
@@ -615,11 +619,11 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 	end
 
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Start ~= nil and typeof(module.Start) == "function" and module.CanStart then
+		if Modules[moduleName].Start ~= nil and typeof(Modules[moduleName].Start) == "function" and Modules[moduleName].CanStart then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = pcall(module.Start)
+				ok, state = pcall(Modules[moduleName].Start)
 			end)
 
 			while ok == nil and task.wait() do
@@ -666,6 +670,8 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			if not ok and Config.DO_NOT_WAIT then
 				ok = true
 			end
+
+			Modules[moduleName].Start = nil;
 
 			if not ok then
 				warn(

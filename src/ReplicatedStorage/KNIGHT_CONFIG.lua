@@ -19,7 +19,7 @@ config = {
     DO_NOT_WAIT = true,
 
     -- Enables logging of startup information for debugging and diagnostics
-    LOG_STARTUP_INFO = true,
+    LOG_STARTUP_INFO = false,
 
     -- Enables tracking if startup is taking too long; false means no warnings or errors for long startups
     TRACKBACK_ON_STARTUP_TOOK_TOO_LONG = false,
