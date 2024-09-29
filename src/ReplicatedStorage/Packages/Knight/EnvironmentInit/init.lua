@@ -285,6 +285,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		)
 	end
 
+	-- Inject librarys
 	for _, library: Folder in pairs(KnightPackage:WaitForChild("library"):GetChildren()) do
 		local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
 		local manifest = library:FindFirstChild("manifest")
@@ -420,9 +421,11 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		return Shutdown(true)
 	end
 
+	-- Get framework config
 	Config = Knight.util.SyncTable(Config, require(KnightPackage:WaitForChild("latest_config")))
 
-	Knight.GetService = function(ServiceName: string): any
+	-- Runtime GetService
+	function Knight:GetService(ServiceName: string): any
 		local Service = script.Parent:FindFirstChild(ServiceName, true)
 
 		if not Service or (Service ~= nil and Modules[ServiceName] == nil) then
@@ -480,6 +483,52 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		module.CanInit = module.CanInit ~= nil and module.CanInit or true
 		module.CanUpdate = module.CanUpdate ~= nil and module.CanUpdate or true
 		module.CanStart = module.CanStart ~= nil and module.CanStart or true
+
+		if type(module.Server) ~= "table" then
+			module.Server = {}
+		end
+
+		if type(module.Client) ~= "table" then
+			module.Client = {}
+		end
+		
+		if not isShared and RunService:IsClient() then
+			-- Introduction of AGF/Knit like remotes api.
+			-- On the client you would do; self.Server.PointsService:GetLocalPoints() for example.
+
+			local ServerRCE = {}
+
+			ServerRCE.__index = function(self, serviceName: string)
+				local RCE = {}
+
+				RCE.__index = function(_, eventName: string)
+					if Knight.Remotes:IsRegistered("KCE:" .. serviceName .. ":" .. eventName) then
+						return function(...)
+							return Knight.Remotes:Fire("KCE:" .. serviceName .. ":" .. eventName, ...)
+						end
+					else
+						warn(("RemoteFunction '%s' is not an valid exposed function of service  '%s' is not registered."):format(eventName, serviceName))
+						return nil
+					end
+				end
+
+				return setmetatable({}, RCE);
+			end
+
+			module.Server = setmetatable({}, ServerRCE);
+		end
+
+		if not isShared and RunService:IsServer() then
+			for EventName: string, EventFunction in pairs(module.Client) do
+				if typeof(EventFunction) ~= "function" then
+					continue;
+				end
+
+				Knight.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", EventFunction)
+			end
+		else
+			module.Client = {};
+		end
 
 		if module.Init ~= nil and typeof(module.Init) == "function" and module.CanInit then
 			local start, ok, state, errorReported = tick(), nil, nil, false

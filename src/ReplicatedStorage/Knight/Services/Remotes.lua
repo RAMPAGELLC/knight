@@ -22,11 +22,15 @@
 	Remotes:FireAll(RemoteName: string, ...) -> (any...)
 	Remotes:Connect(RemoteName: string, callback: () -> void | nil | boolean) -> void
 	Remotes:Register(RemoteName: string, RemoteClass: string, Callback: any) -> void
+	Remotes:RegisterMiddleware(Target: string, Callback: (Player: Player, ...any) -> boolean): void
+	Remotes:UnregisterMiddleware(Target: string): void
 
 RemoteAPI Usage (Recieved from Get/GetAsync):
 	RemoteAPI:Fire(...) -> (any...)
 	RemoteAPI:FireAll(...) -> (any...)
 	RemoteAPI:FireAllNearby(position: Vector3, maxDistance: number | boolean, ...) -> (any...)
+	RemoteAPI:Connect(callback: () -> void | nil | boolean) -> void
+	RemoteAPI:OnDestroying(callback: (RemoteName: string) -> void) -> void
 	RemoteAPI:Destroy()
 ]]
 
@@ -36,8 +40,9 @@ local Service = {
 		Author = "vq9o",
 		Description = "Remote Service for handling remotes across client and server.",
 	},
-	AutoRegisterIfDoesNotExist = true, -- Server :Fire() only. RemoteFunction is default. Useless unless client connects AFTER auto-creation.
-	RemoteAPICache = {}
+	AutoRegisterIfDoesNotExist = false, -- Server :Fire() only. RemoteFunction is default. Useless unless client connects AFTER auto-creation.
+	RemoteAPICache = {},
+	Middleware = {},
 }
 
 local Players = game:GetService("Players")
@@ -50,13 +55,21 @@ local Maid = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Ma
 local Events = Knight:FindFirstChild("Events") or Instance.new("Folder", Knight)
 Events.Name = "Events"
 
-export type KnightRemote = RemoteFunction | RemoteEvent | UnreliableRemoteEvent | BindableEvent | BindableFunction;
+export type KnightRemote = RemoteFunction | RemoteEvent | UnreliableRemoteEvent | BindableEvent | BindableFunction
 export type void = nil
+
+export type ConnectionCallbackId = number
 export type RemoteAPI = {
-	Destroy: () -> void;
-	Fire: (any...) -> (any...);
-	FireAll: (any...) -> (any...);
-	FireAllNearby: (Vector3, number | boolean, any...) -> (any...);
+	Destroy: () -> void,
+	Fire: (...any) -> any...,
+	FireAll: (...any) -> any...,
+	RegisterMiddleware: (RemoteName: string, Callback: (Player: Player, ...any) -> boolean) -> void,
+	UnregisterMiddleware: (RemoteName: string) -> void,
+	FireAllNearby: (Vector3, number | boolean, ...any) -> any...,
+	OnDestroying: (callback: (RemoteName: string) -> void) -> void,
+	SpoofFire: (...any) -> {
+		[ConnectionCallbackId]: any,
+	},
 }
 
 local function GetRemote(RemoteName: string): KnightRemote | boolean
@@ -74,7 +87,11 @@ local function GetRemote(RemoteName: string): KnightRemote | boolean
 			return remote
 		end
 
-		warn(("Remote '%s' was not found. You must manually create the event or register it with the API."):format(RemoteName))
+		warn(
+			("Remote '%s' was not found. You must manually create the event or register it with the API."):format(
+				RemoteName
+			)
+		)
 		return false
 	end
 
@@ -88,44 +105,87 @@ function RemoteAPI.new(Remote: KnightRemote)
 	local self = setmetatable({}, RemoteAPI)
 
 	self.Maid = Maid.new()
-	self.Remote = Remote;
-	self.RemoteName= self.Remote.Name;
+	self.Remote = Remote
+	self.RemoteName = self.Remote.Name
+
+	self.ConnectionCallbacks = {}
+	self.DestroyingCallbacks = {}
 
 	self.Maid:GiveTask(self.Remote.Destroying:Connect(function()
-		return self:Destroy();
+		return self:Destroy()
 	end))
 
-	return self;
+	return self
 end
 
-function RemoteAPI:FireAllNearby(...): (any...)
+function RemoteAPI:Connect(callback: () -> void | nil | boolean): RBXScriptConnection?
+	table.insert(self.ConnectionCallbacks, callback)
+	return Service:Connect(self.RemoteName, callback)
+end
+
+function RemoteAPI:OnDestroying(callback: (RemoteName: string) -> void): void
+	table.insert(self.DestroyingCallbacks, callback)
+end
+
+function RemoteAPI:SpoofFire(...): {
+	[ConnectionCallbackId]: any,
+}
+	local responses = {}
+
+	for i, v in pairs(self.ConnectionCallbacks) do
+		responses[i] = v(...)
+	end
+
+	return responses
+end
+
+function RemoteAPI:FireAllNearby(...): any...
 	return Service:FireAllNearby(self.RemoteName, ...)
 end
 
-function RemoteAPI:FireAll(...): (any...)
+function RemoteAPI:FireAll(...): any...
 	return Service:FireAll(self.RemoteName, ...)
 end
 
-function RemoteAPI:Fire(...): (any...)
+function RemoteAPI:Fire(...): any...
 	return Service:Fire(self.RemoteName, ...)
 end
 
 function RemoteAPI:Destroy()
-	Service.RemoteAPICache[self.RemoteName] = nil;
-	self = nil;	
+	for _, v in pairs(self.DestroyingCallbacks) do
+		v(self.RemoteName)
+	end
+
+	Service.RemoteAPICache[self.RemoteName] = nil
+	self = nil
 end
 
-function Service:GetAsync(RemoteName: string): RemoteAPI | boolean
-	repeat
-		task.wait(.1)
-	until typeof(Service:Get(RemoteName) ~= "boolean")
+function Service:RegisterMiddleware(Target: string, Callback: (Player: Player, ...any) -> boolean): void
+	if Target ~= "*" then
+		assert(
+			self:IsRegistered(Target) == true,
+			("[Knight:Remotes]: Failed to register middleware for event '%s' as it does not exist!"):format(Target)
+		)
+	end
 
-	return Service:Get(RemoteName);
+	self.Middleware[Target] = Callback
+end
+
+function Service:UnregisterMiddleware(Target: string): void
+	self.Middleware[Target] = nil
+end
+
+function Service:GetAsync(RemoteName: string): RemoteAPI
+	repeat
+		task.wait(1)
+	until typeof(Service:Get(RemoteName, true) ~= "boolean")
+
+	return Service:Get(RemoteName, true)
 end
 
 function Service:Get(RemoteName: string, SilenceWarnings: boolean?): RemoteAPI | boolean
 	if Service.RemoteAPICache[RemoteName] ~= nil then
-		return Service.RemoteAPICache[RemoteName];
+		return Service.RemoteAPICache[RemoteName]
 	end
 
 	if SilenceWarnings == nil then
@@ -138,24 +198,31 @@ function Service:Get(RemoteName: string, SilenceWarnings: boolean?): RemoteAPI |
 
 	local remote: Instance | boolean = GetRemote(RemoteName)
 
-	if typeof(remote) == "boolean" then
-		warn(string.format("[Knight:Remotes]: '%s' event is not registered, Remotes:Get() will now throw a boolean!", RemoteName))
+	if typeof(remote) ~= "Instance" and typeof(remote) == "boolean" then
+		if not SilenceWarnings then
+			warn(
+				string.format(
+					"[Knight:Remotes]: '%s' event is not registered, Remotes:Get() will now throw a boolean!",
+					RemoteName
+				)
+			)
+		end
+
 		return false
 	end
 
-	Service.RemoteAPICache[RemoteName] = RemoteAPI.new(remote);
-
-	return Service.RemoteAPICache[RemoteName];
+	Service.RemoteAPICache[RemoteName] = RemoteAPI.new(remote)
+	return Service.RemoteAPICache[RemoteName]
 end
 
 function Service:IsRegistered(RemoteName: string): boolean
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
-	
+
 	return typeof(GetRemote(RemoteName)) ~= "boolean"
 end
 
-function Service:Fire(RemoteName: string, ...): (any...)
+function Service:Fire(RemoteName: string, ...): any...
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -192,11 +259,29 @@ function Service:Fire(RemoteName: string, ...): (any...)
 		if RunService:IsServer() then
 			if remote:IsA("UnreliableRemoteEvent") then
 				assert(args[1] ~= nil, "[Knight:Remotes]: Fire() arg 1 is nil.")
-				assert(typeof(args[1]) == "Instance" and args[1]:IsA("Player"), "[Knight:Remotes]: Fire() arg 1 must be 'Player' object.")
+				assert(
+					typeof(args[1]) == "Instance" and args[1]:IsA("Player"),
+					"[Knight:Remotes]: Fire() arg 1 must be 'Player' object."
+				)
+
+				if not Players:GetPlayerByUserId(args[1].UserId) then
+					warn(string.format("%s has disconnected, remote operation aborted!", args[1].Name))
+					return nil
+				end
+
 				remote:FireClient(...)
 			elseif remote:IsA("RemoteEvent") then
 				assert(args[1] ~= nil, "[Knight:Remotes]: Fire() arg 1 is nil.")
-				assert(typeof(args[1]) == "Instance" and args[1]:IsA("Player"), "[Knight:Remotes]: Fire() arg 1 must be 'Player' object.")
+				assert(
+					typeof(args[1]) == "Instance" and args[1]:IsA("Player"),
+					"[Knight:Remotes]: Fire() arg 1 must be 'Player' object."
+				)
+
+				if not Players:GetPlayerByUserId(args[1].UserId) then
+					warn(string.format("%s has disconnected, remote operation aborted!", args[1].Name))
+					return nil
+				end
+
 				remote:FireClient(...)
 			elseif remote:IsA("BindableFunction") then
 				return remote:Invoke(...)
@@ -204,7 +289,16 @@ function Service:Fire(RemoteName: string, ...): (any...)
 				remote:Fire(...)
 			elseif remote:IsA("RemoteFunction") then
 				assert(args[1] ~= nil, "[Knight:Remotes]: Fire() arg 1 is nil.")
-				assert(typeof(args[1]) == "Instance" and args[1]:IsA("Player"), "[Knight:Remotes]: Fire() arg 1 must be 'Player' object.")
+				assert(
+					typeof(args[1]) == "Instance" and args[1]:IsA("Player"),
+					"[Knight:Remotes]: Fire() arg 1 must be 'Player' object."
+				)
+
+				if not Players:GetPlayerByUserId(args[1].UserId) then
+					warn(string.format("%s has disconnected, remote operation aborted!", args[1].Name))
+					return nil
+				end
+
 				return remote:InvokeClient(...)
 			end
 		else
@@ -223,7 +317,7 @@ function Service:Fire(RemoteName: string, ...): (any...)
 	end
 end
 
-function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...): (any...)
+function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...): any...
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -231,7 +325,10 @@ function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistanc
 	assert(typeof(position) == "Vector3", "[Knight:Remotes]: position must be a Vector3")
 
 	assert(maxDistance ~= nil, "[Knight:Remotes]: maxDistance is nil")
-	assert(typeof(maxDistance) == "number" or typeof(maxDistance) == "boolean", "[Knight:Remotes]: maxDistance must be a number or boolean.")
+	assert(
+		typeof(maxDistance) == "number" or typeof(maxDistance) == "boolean",
+		"[Knight:Remotes]: maxDistance must be a number or boolean."
+	)
 
 	if typeof(maxDistance) == "boolean" then
 		maxDistance = 50
@@ -252,7 +349,7 @@ function Service:FireAllNearby(RemoteName: string, position: Vector3, maxDistanc
 	end
 end
 
-function Service:FireAll(RemoteName: string, ...): (any...)
+function Service:FireAll(RemoteName: string, ...): any...
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -263,7 +360,7 @@ function Service:FireAll(RemoteName: string, ...): (any...)
 	end
 end
 
-function Service:Connect(RemoteName: string, callback: (any...) -> void | nil | boolean): void
+function Service:Connect(RemoteName: string, callback: (any...) -> void | nil | boolean): RBXScriptConnection?
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
@@ -282,14 +379,99 @@ function Service:Connect(RemoteName: string, callback: (any...) -> void | nil | 
 			remote.OnInvoke = callback
 		elseif remote:IsA("RemoteFunction") then
 			if RunService:IsServer() then
-				remote.OnServerInvoke = callback
+				remote.OnServerInvoke = function(player, ...)
+					local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
+
+					if self.Middleware[remote.Name] ~= nil then
+						middleware = self.Middleware[remote.Name]
+					end
+
+					if middleware then
+						if middleware(player, ...) then
+							return callback(player, ...)
+						else
+							warn(
+								("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
+									remote.Name,
+									player.Name
+								)
+							)
+						end
+					else
+						return callback(player, ...)
+					end
+				end
 			else
-				remote.OnClientInvoke = callback
+				remote.OnClientInvoke = function(...)
+					local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
+
+					if self.Middleware[remote.Name] ~= nil then
+						middleware = self.Middleware[remote.Name]
+					end
+
+					if middleware then
+						if middleware(Players.LocalPlayer, ...) then
+							return callback(Players.LocalPlayer, ...)
+						else
+							warn(
+								("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
+									remote.Name,
+									Players.LocalPlayer.Name
+								)
+							)
+						end
+					else
+						return callback(Players.LocalPlayer, ...)
+					end
+				end
 			end
 		end
 
 		if signal then
-			return signal:Connect(callback)
+			return signal:Connect(function(...)
+				local args = { ... }
+				local playerArg: Player? = nil
+
+				if RunService:IsServer() then
+					if remote:IsA("RemoteEvent") or remote:IsA("UnreliableRemoteEvent") then
+						playerArg = args[1]
+						table.remove(args, 1)
+					end
+				else
+					playerArg = Players.LocalPlayer
+				end
+
+				args = table.pack(args)
+
+				local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
+
+				if self.Middleware[remote.Name] ~= nil then
+					middleware = self.Middleware[remote.Name]
+				end
+
+				if middleware then
+					if middleware(playerArg, table.unpack(args)) then
+						if playerArg ~= nil then
+							return callback(playerArg, table.unpack(args))
+						else
+							return callback(table.unpack(args))
+						end
+					else
+						warn(
+							("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
+								remote.Name,
+								playerArg ~= nil and playerArg.Name or "Server"
+							)
+						)
+					end
+				else
+					if playerArg ~= nil then
+						return callback(playerArg, table.unpack(args))
+					else
+						return callback(table.unpack(args))
+					end
+				end
+			end)
 		end
 	end
 end
