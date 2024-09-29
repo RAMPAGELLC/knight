@@ -21,6 +21,8 @@
  Documentation: https://knight.vq9o.com
 ]]
 
+-- TODO: Rewrite _G API, and force everything as proper metatables for fixes + self.Services to work properly.
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -28,7 +30,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Knight = {
 	["IsServer"] = RunService:IsServer(),
-	["Version"] = "<v0.0.8-dev> KNIGHT FRAMEWORK on Roblox "
+	["Version"] = "<v0.0.9-dev> KNIGHT FRAMEWORK on Roblox "
 		.. (RunService:IsStudio() and "Studio" or "Experience")
 		.. " | Experience Version: "
 		.. version(),
@@ -190,6 +192,9 @@ function Knight.Core:Init()
 	local Shared = RuntypeServices.Shared
 
 	_G.Knight = {}
+	_G.Knight.__index = _G.Knight;
+	_G.Knight = setmetatable({}, _G.Knight);
+
 	_G.Knight.API = RuntypeServices
 	_G.Knight.API.Shared = Shared
 	_G.Knight.Internal = Knight
