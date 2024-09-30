@@ -20,6 +20,7 @@
 
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -57,23 +58,46 @@ local function Shutdown(DoNotReport: boolean | nil)
 
 	local ReportID = HttpService:GenerateGUID(false)
 
-	if IsClient then
-		local ScreenGui = Instance.new("ScreenGui")
-		ScreenGui.Parent = Players.LocalPlayer.PlayerGui
-		ScreenGui.Enabled = true
-		ScreenGui.DisplayOrder = 69999
+	local Blur = Instance.new("BlurEffect")
+	Blur.Size = 64
+	Blur.Enabled = true
+	Blur.Parent = Lighting
 
-		local TextLabel = Instance.new("TextLabel")
-		TextLabel.RichText = true
-		TextLabel.TextWrapped = true
-		TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-		TextLabel.Parent = ScreenGui
-		TextLabel.BackgroundColor3 = Color3.fromRGB(93, 34, 34)
+	local MinIndex = 999999999
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Parent = Players.LocalPlayer.PlayerGui
+	ScreenGui.IgnoreGuiInset = true
+	ScreenGui.Archivable = false
+	ScreenGui.Enabled = false
+	ScreenGui.DisplayOrder = MinIndex
+
+	local ImageLabel = Instance.new("ImageLabel")
+	ImageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+	ImageLabel.Position = UDim2.new(0.5, 0, 0.22, 0)
+	ImageLabel.Size = UDim2.new(0, 425, 0, 425)
+	ImageLabel.BackgroundTransparency = 1
+	ImageLabel.Image = "rbxassetid://11782559813"
+	ImageLabel.ScaleType = Enum.ScaleType.Fit
+	ImageLabel.Parent = ScreenGui
+	ImageLabel.ZIndex = MinIndex + 2
+
+	local TextLabel = Instance.new("TextLabel")
+	TextLabel.RichText = true
+	TextLabel.TextWrapped = true
+	TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TextLabel.Parent = ScreenGui
+	TextLabel.BackgroundColor3 = Color3.fromRGB(93, 34, 34)
+	TextLabel.Size = UDim2.new(1, 0, 1, 0)
+	TextLabel.Visible = true
+	TextLabel.TextStrokeTransparency = 0.2
+	TextLabel.BackgroundTransparency = 0.2
+	TextLabel.ZIndex = MinIndex + 1
+
+	if IsClient then
 		TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(Config.SHUTDOWN_KICK_DELAY))
 			or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
-		TextLabel.Size = UDim2.new(1, 0, 1, 0)
-		TextLabel.Visible = true
-		TextLabel.BackgroundTransparency = 0.7
+
+		ScreenGui.Enabled = true
 
 		for i = Config.SHUTDOWN_KICK_DELAY, 1, -1 do
 			TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(i))
@@ -81,26 +105,14 @@ local function Shutdown(DoNotReport: boolean | nil)
 			task.wait(1)
 		end
 
-		Players.LocalPlayer:Kick("Knight framework error occured.")
+		Players.LocalPlayer:Kick("Knight framework error occured. Report ID: " .. ReportID)
 	else
 		local function p(v)
-			local ScreenGui = Instance.new("ScreenGui")
-			ScreenGui.Parent = v.PlayerGui
-			ScreenGui.Enabled = true
-			ScreenGui.DisplayOrder = 69999
-
-			local TextLabel = Instance.new("TextLabel")
-			TextLabel.RichText = true
-			TextLabel.TextWrapped = true
-			TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			TextLabel.Parent = ScreenGui
-			TextLabel.BackgroundColor3 = Color3.fromRGB(93, 34, 34)
 			TextLabel.Text = DoNotReport
 					and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(Config.SHUTDOWN_KICK_DELAY))
 				or string.format(InternalConfig.ERROR_EN_WITH_REF_ID, tostring(Config.SHUTDOWN_KICK_DELAY), ReportID)
-			TextLabel.Size = UDim2.new(1, 0, 1, 0)
-			TextLabel.Visible = true
-			TextLabel.BackgroundTransparency = 0.7
+
+			ScreenGui.Enabled = true
 
 			for i = Config.SHUTDOWN_KICK_DELAY, 1, -1 do
 				TextLabel.Text = DoNotReport and InternalConfig.ERR_EN_NO_REF_ID:format(tostring(i))
@@ -108,7 +120,7 @@ local function Shutdown(DoNotReport: boolean | nil)
 				task.wait(1)
 			end
 
-			v:Kick("Knight framework error occured.")
+			v:Kick("Knight framework error occured. Report ID: " .. ReportID)
 		end
 
 		for i, v in pairs(Players:GetPlayers()) do
@@ -475,7 +487,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			end
 
 			warn(string.format("%s.lua knight service has been stopped via 'Service.Unload()'.", moduleName))
-			Modules[moduleName] = nil;
+			Modules[moduleName] = nil
 		end
 
 		Modules[moduleName].MemoryKBStart = Modules[moduleName].GetMemoryUsageKB()
@@ -490,7 +502,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		if type(module.Client) ~= "table" then
 			Modules[moduleName].Client = {}
 		end
-		
+
 		if not isShared and RunService:IsClient() then
 			-- Introduction of AGF/Knit like remotes api.
 			-- On the client you would do; self.Server.PointsService:GetLocalPoints() for example.
@@ -506,33 +518,45 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 							return Knight.Remotes:Fire("KCE:" .. serviceName .. ":" .. eventName, ...)
 						end
 					else
-						warn(("RemoteFunction '%s' is not an valid exposed function of service  '%s' is not registered."):format(eventName, serviceName))
+						warn(
+							("RemoteFunction '%s' is not an valid exposed function of service  '%s' is not registered."):format(
+								eventName,
+								serviceName
+							)
+						)
 						return nil
 					end
 				end
 
-				return setmetatable({}, RCE);
+				return setmetatable({}, RCE)
 			end
 
-			Modules[moduleName].Server = setmetatable({}, ServerRCE);
+			Modules[moduleName].Server = setmetatable({}, ServerRCE)
 		end
 
 		if not isShared and RunService:IsServer() then
 			for EventName: string, EventFunction in pairs(Modules[moduleName].Client) do
 				if typeof(EventFunction) ~= "function" then
-					continue;
+					continue
 				end
 
-				Knight.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", EventFunction)
+				Knight.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", function(...)
+					warn("Sending: ", ...)
+					return Modules[moduleName].Client[EventName](Modules[moduleName], ...)
+				end)
 			end
 		else
-			Modules[moduleName].Client = {};
+			Modules[moduleName].Client = {}
 		end
 	end
 
 	-- Startup modules
 	for moduleName: any, module: any in pairs(Modules) do
-		if Modules[moduleName].Init ~= nil and typeof(Modules[moduleName].Init) == "function" and Modules[moduleName].CanInit then
+		if
+			Modules[moduleName].Init ~= nil
+			and typeof(Modules[moduleName].Init) == "function"
+			and Modules[moduleName].CanInit
+		then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
@@ -581,7 +605,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				ok = true
 			end
 
-			Modules[moduleName].Init = nil;
+			Modules[moduleName].Init = nil
 
 			if not ok then
 				warn(
@@ -597,8 +621,14 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			end
 		end
 
-		if Modules[moduleName].Update ~= nil and typeof(Modules[moduleName].Update) == "function" and Modules[moduleName].CanUpdate then
-			Modules[moduleName].internalMaid:GiveTask(Knight.KnightCache.UpdateEvent:Connect(Modules[moduleName].Update))
+		if
+			Modules[moduleName].Update ~= nil
+			and typeof(Modules[moduleName].Update) == "function"
+			and Modules[moduleName].CanUpdate
+		then
+			Modules[moduleName].internalMaid:GiveTask(
+				Knight.KnightCache.UpdateEvent:Connect(Modules[moduleName].Update)
+			)
 		end
 
 		if Config.LOG_STARTUP_INFO then
@@ -619,7 +649,11 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 	end
 
 	for moduleName: any, module: any in pairs(Modules) do
-		if Modules[moduleName].Start ~= nil and typeof(Modules[moduleName].Start) == "function" and Modules[moduleName].CanStart then
+		if
+			Modules[moduleName].Start ~= nil
+			and typeof(Modules[moduleName].Start) == "function"
+			and Modules[moduleName].CanStart
+		then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
@@ -628,7 +662,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 
 			while ok == nil and task.wait() do
 				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
-					errorReported = true;
+					errorReported = true
 
 					warn(
 						string.format(
@@ -671,7 +705,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				ok = true
 			end
 
-			Modules[moduleName].Start = nil;
+			Modules[moduleName].Start = nil
 
 			if not ok then
 				warn(

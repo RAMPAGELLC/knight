@@ -63,7 +63,7 @@ export type RemoteAPI = {
 	Destroy: () -> void,
 	Fire: (...any) -> any...,
 	FireAll: (...any) -> any...,
-	RegisterMiddleware: (RemoteName: string, Callback: (Player: Player, ...any) -> boolean) -> void,
+	RegisterMiddleware: (RemoteName: string, Callback: (RemoteName: string, Player: Player, ...any) -> boolean) -> void,
 	UnregisterMiddleware: (RemoteName: string) -> void,
 	FireAllNearby: (Vector3, number | boolean, ...any) -> any...,
 	OnDestroying: (callback: (RemoteName: string) -> void) -> void,
@@ -160,7 +160,7 @@ function RemoteAPI:Destroy()
 	self = nil
 end
 
-function Service:RegisterMiddleware(Target: string, Callback: (Player: Player, ...any) -> boolean): void
+function Service:RegisterMiddleware(Target: string, Callback: (RemoteName: string, Player: Player, ...any) -> boolean): void
 	if Target ~= "*" then
 		assert(
 			self:IsRegistered(Target) == true,
@@ -380,97 +380,49 @@ function Service:Connect(RemoteName: string, callback: (any...) -> void | nil | 
 		elseif remote:IsA("RemoteFunction") then
 			if RunService:IsServer() then
 				remote.OnServerInvoke = function(player, ...)
-					local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
+					local args = table.pack(player, ...)
+					local middleware = self.Middleware[remote.Name] or self.Middleware["*"]
 
-					if self.Middleware[remote.Name] ~= nil then
-						middleware = self.Middleware[remote.Name]
+					if middleware and not middleware(remote.Name, player, ...) then
+						warn(("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(remote.Name, player.Name))
+						return
 					end
 
-					if middleware then
-						if middleware(player, ...) then
-							return callback(player, ...)
-						else
-							warn(
-								("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
-									remote.Name,
-									player.Name
-								)
-							)
-						end
-					else
-						return callback(player, ...)
-					end
+					return callback(table.unpack(args))
 				end
 			else
 				remote.OnClientInvoke = function(...)
-					local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
+					local middleware = self.Middleware[remote.Name] or self.Middleware["*"]
 
-					if self.Middleware[remote.Name] ~= nil then
-						middleware = self.Middleware[remote.Name]
+					if middleware and not middleware(remote.Name, Players.LocalPlayer, ...) then
+						warn(("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(remote.Name, Players.LocalPlayer.Name))
+						return
 					end
 
-					if middleware then
-						if middleware(Players.LocalPlayer, ...) then
-							return callback(Players.LocalPlayer, ...)
-						else
-							warn(
-								("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
-									remote.Name,
-									Players.LocalPlayer.Name
-								)
-							)
-						end
-					else
-						return callback(Players.LocalPlayer, ...)
-					end
+					return callback(...)
 				end
 			end
 		end
 
 		if signal then
 			return signal:Connect(function(...)
-				local args = { ... }
-				local playerArg: Player? = nil
-
-				if RunService:IsServer() then
-					if remote:IsA("RemoteEvent") or remote:IsA("UnreliableRemoteEvent") then
-						playerArg = args[1]
-						table.remove(args, 1)
-					end
-				else
-					playerArg = Players.LocalPlayer
+				local args = table.pack(...)
+				local playerArg = RunService:IsServer() and args[1] or Players.LocalPlayer or nil;
+				
+				-- Remove player from args if on server
+				if RunService:IsServer() and (remote:IsA("RemoteEvent") or remote:IsA("UnreliableRemoteEvent")) then
+					table.remove(args, 1)
 				end
 
-				args = table.pack(args)
-
-				local middleware = self.Middleware["*"] ~= nil and self.Middleware["*"]
-
-				if self.Middleware[remote.Name] ~= nil then
-					middleware = self.Middleware[remote.Name]
+				-- Handle middleware
+				local middleware = self.Middleware[remote.Name] or self.Middleware["*"]
+				if middleware and not middleware(remote.Name, playerArg, table.unpack(args)) then
+					warn(("[Knight:Remotes]: Dropped Event '%s' as it failed middleware!"):format(remote.Name))
+					return
 				end
-
-				if middleware then
-					if middleware(playerArg, table.unpack(args)) then
-						if playerArg ~= nil then
-							return callback(playerArg, table.unpack(args))
-						else
-							return callback(table.unpack(args))
-						end
-					else
-						warn(
-							("[Knight:Remotes]: Dropped Event '%s' from '%s' as it failed middleware!"):format(
-								remote.Name,
-								playerArg ~= nil and playerArg.Name or "Server"
-							)
-						)
-					end
-				else
-					if playerArg ~= nil then
-						return callback(playerArg, table.unpack(args))
-					else
-						return callback(table.unpack(args))
-					end
-				end
+				
+				-- Call the callback with the appropriate arguments
+				return callback(playerArg, table.unpack(args))
 			end)
 		end
 	end
@@ -495,7 +447,6 @@ function Service:Register(RemoteName: string, RemoteClass: string, Callback: any
 	assert(typeof(RemoteClass) == "string", "[Knight:Remotes]: RemoteClass must be a string")
 
 	if Events:FindFirstChild(RemoteName) then
-		warn(RemoteName, " is already registered")
 		return
 	end
 

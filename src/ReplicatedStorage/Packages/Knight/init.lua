@@ -192,9 +192,6 @@ function Knight.Core:Init()
 	local Shared = RuntypeServices.Shared
 
 	_G.Knight = {}
-	_G.Knight.__index = _G.Knight;
-	_G.Knight = setmetatable({}, _G.Knight);
-
 	_G.Knight.API = RuntypeServices
 	_G.Knight.API.Shared = Shared
 	_G.Knight.Internal = Knight
