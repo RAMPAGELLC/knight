@@ -76,6 +76,14 @@ local function GetRemote(RemoteName: string): KnightRemote | boolean
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
+	if RemoteName:find(";") then
+		RemoteName = RemoteName:gsub(";", "_")
+	end
+
+	if RemoteName:find(":") then
+		RemoteName = RemoteName:gsub(":", "_")
+	end
+
 	local remote = Events:FindFirstChild(RemoteName)
 
 	if not remote then
@@ -432,6 +440,14 @@ function Service:Unregister(RemoteName: string): void
 	assert(RemoteName ~= nil, "[Knight:Remotes]: RemoteName is nil")
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 
+	if RemoteName:find(";") then
+		RemoteName = RemoteName:gsub(";", "_")
+	end
+
+	if RemoteName:find(":") then
+		RemoteName = RemoteName:gsub(":", "_")
+	end
+
 	if not Events:FindFirstChild(RemoteName) then
 		return
 	end
@@ -445,6 +461,14 @@ function Service:Register(RemoteName: string, RemoteClass: string, Callback: any
 
 	assert(typeof(RemoteName) == "string", "[Knight:Remotes]: RemoteName must be a string")
 	assert(typeof(RemoteClass) == "string", "[Knight:Remotes]: RemoteClass must be a string")
+
+	if RemoteName:find(";") then
+		RemoteName = RemoteName:gsub(";", "_")
+	end
+
+	if RemoteName:find(":") then
+		RemoteName = RemoteName:gsub(":", "_")
+	end
 
 	if Events:FindFirstChild(RemoteName) then
 		return
