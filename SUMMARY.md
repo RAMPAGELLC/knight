@@ -31,8 +31,10 @@
 * [What are folders](introduction/what-are-folders.md)
 * [What are services?](introduction/what-are-services.md)
 * [Getting a service](introduction/getting-a-service.md)
+* [Exposed-Server Functions](introduction/exposed-server-functions.md)
 * [Configuring Knight](introduction/configuring-knight.md)
 * [Creating a library](introduction/creating-a-library.md)
+* [AGF/Knit Transition to Knight](introduction/agf-knit-transition-to-knight.md)
 * [KPM Integration: Knight Package Manager CLI](introduction/kpm-integration-knight-package-manager-cli.md)
 * [Framework Profiling](introduction/framework-profiling.md)
 
