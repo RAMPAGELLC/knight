@@ -18,6 +18,7 @@
 ## Luau API
 
 * [Knight External API](luau-api/knight-external-api.md)
+* [Knight Remotes API](luau-api/knight-remotes-api.md)
 
 ## Community
 
