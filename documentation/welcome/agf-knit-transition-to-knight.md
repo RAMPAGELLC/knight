@@ -13,7 +13,6 @@ The **Knight framework** offers a flexible, modular, and scalable structure tail
 * **Enhanced modularity** with well-defined service and object separation.
 * **Configurable behaviors** using `KNIGHT_CONFIG`, `KNIGHT_ENUM`, and `KNIGHT_TYPES`.
 * **Improved organization** of shared, client, and server scripts across the game's services.
-* **Seamless replication** and synchronization mechanisms that optimize network calls.
 
 ## **Key Concepts in Knight**
 
@@ -63,7 +62,7 @@ end
 
 ## **2. Client-Server Communication**
 
-In AGF/Knit, client-server communication is handled via `RemoteFunction` or `RemoteEvent` abstractions like `Client` tables within services. Knight, on the other hand, exposes **remote functions** and **remote events** dynamically through the `Knight.Remotes` API.
+In AGF/Knit, client-server communication is handled via `RemoteFunction` abstractions like `Client` tables within services. Knight, on the other hand, exposes **remote functions** dynamically through the `Knight.Remotes` API.
 
 **AGF/Knit Example:**
 
@@ -73,7 +72,7 @@ PointsService.Client.GetPoints = function(self, player)
     return PointsService:GetPlayerPoints(player)
 end
 
--- Client-side
+-- Client-side Knit Service
 function ClientPointService:Start()
     local points = Knit.GetService("PointsService"):GetPoints()
 end
@@ -92,7 +91,7 @@ function PointsService.Client:GetPoints(player)
     return PointsService:GetPlayerPoints(player)
 end
 
--- Client-side
+-- Client-side Knight Service
 function ClientPointService:Start()
     local points = self.Server.PointsService:GetPoints()
 end
