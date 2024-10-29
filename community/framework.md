@@ -28,9 +28,8 @@ Please include:
 * Knight Version
 * is any other framework installed?
 * Is any other knight addons installed?
-* Is any non-default knight objects/services installed?
-* knight version
-* RBLX version
+* Knight version
+* Roblox Studio/Client version
 
 ## Suggestions
 
@@ -40,19 +39,6 @@ Before posting makes sure:
 * Descriptive description
 * **Make sure it doesn't exist already!**
 * Explain the Pros & Cons of this addition and/or removal.
-
-## Push Commit
-
-We have a few guidelines, for contributors, you will get an exclusive ability to join the official Knight team, joining the team you will get Knight team flair & badge on rampage meta forum. In order to join must meet requirements:
-
-* Actively assist in the development of Knight
-* 10+ Commits (subjected to future change.)
-* Dedicated
-* Respectful & work well with a team.
-
-Upon joining the team you will have the authority to commit freely & audit other requests. As Knight official team, the grows requirements will go higher.
-
-You do not have to join Knight official maintainers team to contribute, simply make a pull and wait for it to be reviewed once you completed it.
 
 ### Style Guidelines
 
@@ -83,15 +69,8 @@ Before you can push we have some requirements, make sure your commit message is:
 
 ### Lua Styleguide
 
-* Use 4 Space indentation
-* Don't create unnecessary threads. always try to find a better method of triggering events
-* Don't repeat yourself.. if you're using the same operations in many different places convert them into a function with flexible variables
-* For distance checking loops set longer waits if you're outside of a range
-* Job specific loops should only run for players with that job, don't waste cycles
-* When possible don't trust the client, especially with transactions
+* Do not repeat yourself.
+* Do not trust the client
 * Balance security and optimizations
 * [Consider this Lua Performance guide](https://springrts.com/wiki/Lua\_Performance)
-* Use local variables everywhere possible
 * Make use of `KNIGHT_CONFIG` where it makes sense making features optional or customizable
-
-If you meet requirements, send a request to [https://meta.rampage.place/g/KnightMaintainers](https://meta.rampage.place/g/KnightMaintainers)

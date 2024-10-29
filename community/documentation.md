@@ -48,7 +48,3 @@ Before you can push we have some requirements, make sure your commit message is:
   * ⬇️ `:arrow_down:` when downgrading dependencies
 *
   * 👕 `:shirt:` when removing linter warnings
-
-
-
-If you meet requirements, send a request to [https://meta.rampage.place/g/KnightMaintainers](https://meta.rampage.place/g/KnightMaintainers)
