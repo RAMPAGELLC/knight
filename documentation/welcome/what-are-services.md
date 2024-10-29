@@ -2,7 +2,7 @@
 
 
 
-<figure><img src="../.gitbook/assets/what are services.jpg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/what are services.jpg" alt=""><figcaption></figcaption></figure>
 
 ## What are services?
 
@@ -62,6 +62,14 @@ Default Priority's is;
 * For Services its 2
 
 You can manually set the Priority to startup sooner or latet by setting Knight.Priority to a number in the script. Higher Priority = Start's sooner.
+{% endhint %}
+
+## Additional Configuration
+
+Optionally, if you have the instance named "**Init**" or "**EnivornmentInit**" or it has the collection tag "**KNIGHT\_IGNORE**" it will be automatically ignored and not inited/imported into the framework.&#x20;
+
+{% hint style="warning" %}
+We recommend using the Collection Tag only to mark Modules as in-active/disabled.
 {% endhint %}
 
 ## Template

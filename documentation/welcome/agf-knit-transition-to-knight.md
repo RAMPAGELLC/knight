@@ -1,6 +1,6 @@
 # AGF/Knit Transition to Knight
 
-<figure><img src="../.gitbook/assets/AGFKnitTransition.jpg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/AGFKnitTransition.jpg" alt=""><figcaption></figcaption></figure>
 
 ## **Introduction**
 
@@ -126,4 +126,4 @@ As you transition to Knight, it’s important to understand its directory struct
 * **Objects (reusable game logic)**: `src/ReplicatedStorage/Knight/Objects`
 * **Configuration files**: `src/ReplicatedStorage/KNIGHT_CONFIG.lua`, `KNIGHT_ENUM.lua`, `KNIGHT_TYPES.lua`
 
-This clear separation of concerns allows for easier management of client-server logic and reusable components. We highly recommend going to [welcome.md](welcome.md "mention")to read further about our framework!
+This clear separation of concerns allows for easier management of client-server logic and reusable components. We highly recommend going to [.](./ "mention")to read further about our framework!

@@ -1,6 +1,6 @@
 # Getting a service
 
-<figure><img src="../.gitbook/assets/Getting a service.jpg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Getting a service.jpg" alt=""><figcaption></figcaption></figure>
 
 ## Getting a service
 
@@ -46,7 +46,7 @@ While cyclic indexing can be convenient, it's important to note that in complex 
 
 
 
-On large experiences such as the Rosource Project, the Emergency Response Series, etc we average around \~3-6GB Client Memory with Cyclic enabled.
+On large experiences such as the Rosource Project, the Emergency Response Series, etc we average around \~3GB Client Memory with Cyclic enabled. Please note this specifically with the large-coldebase with all gameplay features.
 {% endhint %}
 
 ## Disabling Cyclic Indexing
@@ -73,6 +73,18 @@ end
 
 return Knight
 ```
+
+{% hint style="info" %}
+#### When cyclic indexing is disabled you will still be able to index the following:
+
+* Player
+* Enum
+* initStart
+* Inited
+* KnightCache
+* GetService
+* Remotes
+{% endhint %}
 
 #### Best Practices
 
