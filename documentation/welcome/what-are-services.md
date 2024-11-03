@@ -55,13 +55,13 @@ If you're using a third-party module and don't want Knight to call its default s
 Folders named **"Database"** will have the first priority during initialization, followed by manual **"Priority"** set within the modu**le**. This is useful for ensuring that core game systems, such as data management, are loaded before other services.
 
 {% hint style="info" %}
-Default Priority's is;
+The default priority levels are as follows:
 
-* For Internal Services it's 4.
-* For Objects its 3
-* For Services its 2
+* Internal Services: 4
+* Objects: 3
+* Services: 2
 
-You can manually set the Priority to startup sooner or latet by setting Knight.Priority to a number in the script. Higher Priority = Start's sooner.
+You can adjust the startup priority by setting `Knight.Priority` to a specific number in the script. Higher priority numbers indicate an earlier startup.
 {% endhint %}
 
 ## Additional Configuration
