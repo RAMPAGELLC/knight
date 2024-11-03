@@ -284,7 +284,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 	Knight.Player = RunService:IsClient() and Players.LocalPlayer or false
 	Knight.Internal = KnightInternal
 	Knight.KnightCache = { UpdateEvent = nil }
-	Knight.Remotes = ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("Remotes", true)
+	Knight.Remotes = ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild("Remotes")
 
 	if Knight.Remotes ~= nil and Knight.Remotes:IsA("ModuleScript") then
 		Knight.Remotes = require(Knight.Remotes)
@@ -541,7 +541,6 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 				end
 
 				Knight.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", function(...)
-					warn("Sending: ", ...)
 					return Modules[moduleName].Client[EventName](Modules[moduleName], ...)
 				end)
 			end
