@@ -15,107 +15,284 @@ The `KnightRemotes` module provides a robust framework for managing remote event
 
 ## Functions
 
-#### Remotes:GetAsync(RemoteName: string) -> await RemoteAPI
+Here’s the revised documentation with the requested formatting changes:
 
-Waits to receive the `RemoteAPI` associated with `RemoteName`.
+***
 
-* **Arguments**:
-  * `RemoteName` (string): The name of the remote event/function to retrieve.
-* **Returns**: `RemoteAPI` (yields until available).
+### `Remotes:GetAsync(RemoteName: string) -> await RemoteAPI`
 
-#### Remotes:Get(RemoteName: string) -> RemoteAPI | boolean
+**Description:**\
+Waits asynchronously to retrieve the `RemoteAPI` associated with the specified remote name.
 
-Fetches the `RemoteAPI` for a given remote name synchronously.
+**Usage:**
 
-* **Arguments**:
-  * `RemoteName` (string): The name of the remote.
-* **Returns**: `RemoteAPI` if available, otherwise `false`.
+```lua
+local remoteAPI = Remotes:GetAsync("ExampleRemote")
+```
 
-#### Remotes:Fire(RemoteName: string, ...) -> (any...)
+**Parameters:**
 
-Fires the specified remote to a particular player or event handler with the provided arguments.
+* **RemoteName** (string): The name of the remote event or function to retrieve.
 
-* **Arguments**:
-  * `RemoteName` (string): Name of the remote.
-  * `...` (any): Arguments passed to the remote event.
+**Returns:**
 
-#### Remotes:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...) -> (any...)
+* **RemoteAPI**: The `RemoteAPI` associated with `RemoteName` (yields until available).
 
-Fires the remote to all players within a specified `maxDistance` from `position`.
+***
 
-* **Arguments**:
-  * `RemoteName` (string): The remote's name.
-  * `position` (Vector3): The center position for nearby players.
-  * `maxDistance` (number | boolean): The maximum radius (defaults to `50` if `true`).
-  * `...` (any): Additional arguments passed to the remote.
+### `Remotes:Get(RemoteName: string) -> RemoteAPI | boolean`
 
-#### Remotes:FireAll(RemoteName: string, ...) -> (any...)
+**Description:**\
+Fetches the `RemoteAPI` associated with the given remote name synchronously.
 
-Fires the remote event for all connected players.
+**Usage:**
 
-* **Arguments**:
-  * `RemoteName` (string): The remote's name.
-  * `...` (any): Arguments passed to each connected player.
+```lua
+local remoteAPI = Remotes:Get("ExampleRemote")
+```
 
-#### Remotes:Connect(RemoteName: string, callback: () -> void | nil | boolean) -> void
+**Parameters:**
 
-Attaches a callback to the specified remote. This callback is triggered each time the remote event is fired.
+* **RemoteName** (string): The name of the remote.
 
-* **Arguments**:
-  * `RemoteName` (string): The name of the remote.
-  * `callback` (function): The function to be executed on remote event.
+**Returns:**
 
-#### Remotes:Register(RemoteName: string, RemoteClass: string, Callback: any) -> void
+* **RemoteAPI**: The `RemoteAPI` if available, otherwise `false`.
 
-Registers a new remote with a specified class and optional callback.
+***
 
-* **Arguments**:
-  * `RemoteName` (string): The name for the new remote.
-  * `RemoteClass` (string): The class type (e.g., `RemoteFunction`).
-  * `Callback` (function, optional): A function for the remote.
+### `Remotes:Fire(RemoteName: string, ...) -> (any...)`
 
-#### Remotes:RegisterMiddleware(Target: string, Callback: (Player: Player, ...any) -> boolean): void
+**Description:**\
+Triggers the specified remote event or function with the provided arguments.
 
-Adds middleware for a specific remote, performing checks or validations before the remote is triggered.
+**Usage:**
 
-* **Arguments**:
-  * `Target` (string): The target remote or `*` for global middleware.
-  * `Callback` (function): The middleware function that returns `true` to proceed or `false` to block.
+```lua
+Remotes:Fire("ExampleRemote", arg1, arg2)
+```
 
-#### Remotes:UnregisterMiddleware(Target: string): void
+**Parameters:**
 
-Removes the middleware associated with a target remote.
+* **RemoteName** (string): The name of the remote.
+* **...** (any): Arguments passed to the remote event.
 
-* **Arguments**:
-  * `Target` (string): The name of the remote to remove middleware from.
+***
 
-### RemoteAPI Methods
+### `Remotes:FireAllNearby(RemoteName: string, position: Vector3, maxDistance: number | boolean, ...) -> (any...)`
 
-**RemoteAPI:Fire(...) -> (any...)**
+**Description:**\
+Fires the remote to all players within the specified distance from a central position.
 
-Triggers the remote with the provided arguments.
+**Usage:**
 
-**RemoteAPI:FireAll(...) -> (any...)**
+```lua
+Remotes:FireAllNearby("ExampleRemote", Vector3.new(0, 0, 0), 100, any...)
+```
 
-Fires the remote for all players.
+**Parameters:**
 
-**RemoteAPI:FireAllNearby(position: Vector3, maxDistance: number | boolean, ...) -> (any...)**
+* **RemoteName** (string): The name of the remote.
+* **position** (Vector3): Center position for nearby players.
+* **maxDistance** (number | boolean): Maximum radius; if `true`, defaults to 50.
+* **...** (any): Additional arguments passed to the remote.
 
-Triggers the remote for players within `maxDistance` of `position`.
+***
 
-**RemoteAPI:Connect(callback: () -> void | nil | boolean) -> void**
+### `Remotes:FireAll(RemoteName: string, ...) -> (any...)`
 
-Attaches a callback to the remote event. Triggered upon the event firing.
+**Description:**\
+Triggers the remote for all connected players.
 
-**RemoteAPI:OnDestroying(callback: (RemoteName: string) -> void) -> void**
+**Usage:**
 
-Sets a callback that runs when the remote is destroyed.
+```lua
+Remotes:FireAll("ExampleRemote", arg1, arg2)
+```
 
-**RemoteAPI:Destroy()**
+**Parameters:**
 
-Cleans up and removes the remote from cache, firing any `OnDestroying` callbacks.
+* **RemoteName** (string): The remote’s name.
+* **...** (any): Arguments passed to each connected player.
 
-## Examples
+***
+
+### `Remotes:Connect(RemoteName: string, callback: () -> void | nil | boolean) -> void`
+
+**Description:**\
+Attaches a callback to the specified remote. The callback executes each time the remote event is fired.
+
+**Usage:**
+
+```lua
+Remotes:Connect("ExampleRemote", function()
+    print("Remote triggered!") 
+end)
+```
+
+**Parameters:**
+
+* **RemoteName** (string): The name of the remote.
+* **callback** (function): Function executed on the remote event firing.
+
+***
+
+### `Remotes:Register(RemoteName: string, RemoteClass: string, Callback: any) -> void`
+
+**Description:**\
+Registers a new remote with a specified class type and optional callback function.
+
+**Usage:**
+
+<pre class="language-lua"><code class="lang-lua">Remotes:Register("ExampleRemote", "RemoteFunction", function()
+<strong>    print("Remote registered!")
+</strong>end)
+</code></pre>
+
+**Parameters:**
+
+* **RemoteName** (string): Name for the new remote.
+* **RemoteClass** (string): Class type (e.g., RemoteFunction).
+* **Callback** (function, optional): Function to associate with the remote.
+
+***
+
+### `Remotes:RegisterMiddleware(Target: string, Callback: (Player: Player, ...any) -> boolean): void`
+
+**Description:**\
+Adds middleware for validation or checks before a remote is triggered.
+
+**Usage:**
+
+```lua
+Remotes:RegisterMiddleware("ExampleRemote", function(player) 
+    return player:IsInGroup(1234567890) 
+end)
+```
+
+**Parameters:**
+
+* **Target** (string): The target remote or `*` for global middleware.
+* **Callback** (function): Middleware function, returning `true` to proceed or `false` to block.
+
+***
+
+### `Remotes:UnregisterMiddleware(Target: string): void`
+
+**Description:**\
+Removes middleware associated with a specific remote.
+
+**Usage:**
+
+```lua
+Remotes:UnregisterMiddleware("ExampleRemote")
+```
+
+**Parameters:**
+
+* **Target** (string): The name of the remote from which to remove middleware.
+
+***
+
+### `RemoteAPI:Fire(...) -> (any...)`
+
+**Description:**\
+Triggers the associated remote event with the provided arguments.
+
+**Usage:**
+
+```lua
+remoteAPI:Fire(arg1, arg2)
+```
+
+**Parameters:**
+
+* **...** (any): Arguments passed to the remote event.
+
+***
+
+### `RemoteAPI:FireAll(...) -> (any...)`
+
+**Description:**\
+Fires the associated remote for all players.
+
+**Usage:**
+
+```lua
+remoteAPI:FireAll(arg1, arg2)
+```
+
+**Parameters:**
+
+* **...** (any): Arguments passed to each connected player.
+
+***
+
+### `RemoteAPI:FireAllNearby(position: Vector3, maxDistance: number | boolean, ...) -> (any...)`
+
+**Description:**\
+Triggers the remote for players within a specific range from a center position.
+
+**Usage:**
+
+```lua
+remoteAPI:FireAllNearby(Vector3.new(0, 0, 0), 100, arg1, arg2)
+```
+
+**Parameters:**
+
+* **position** (Vector3): The central position for nearby players.
+* **maxDistance** (number | boolean): Maximum radius; defaults to 50 if `true`.
+* **...** (any): Additional arguments for the remote.
+
+***
+
+### `RemoteAPI:Connect(callback: () -> void | nil | boolean) -> void`
+
+**Description:**\
+Attaches a callback to the remote event, executed when the event fires.
+
+**Usage:**
+
+```lua
+remoteAPI:Connect(function() print("Remote event triggered!") end)
+```
+
+**Parameters:**
+
+* **callback** (function): Function to execute on the event firing.
+
+***
+
+### `RemoteAPI:OnDestroying(callback: (RemoteName: string) -> void) -> void`
+
+**Description:**\
+Sets a callback function to be executed when the remote is destroyed.
+
+**Usage:**
+
+```lua
+remoteAPI:OnDestroying(function(remoteName) print(remoteName, "is being destroyed.") end)
+```
+
+**Parameters:**
+
+* **callback** (function): Function called with the `RemoteName` when destroyed.
+
+***
+
+### `RemoteAPI:Destroy()`
+
+**Description:**\
+Removes the remote from cache and triggers any attached `OnDestroying` callbacks.
+
+**Usage:**
+
+```lua
+remoteAPI:Destroy()
+```
+
+## Examples / Code Samples
 
 ### Getting and Firing a Remote
 
@@ -161,7 +338,7 @@ Remotes:RegisterMiddleware("PlayerData", function(player, data)
 end)
 ```
 
-## Firing a Remote to Nearby Players
+### Firing a Remote to Nearby Players
 
 Fire a remote to all players within a 100-stud radius of a specific position.
 
