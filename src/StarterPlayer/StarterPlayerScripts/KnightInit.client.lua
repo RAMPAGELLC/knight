@@ -13,7 +13,7 @@
  License: MIT
  Knight Package Manager (KPM): https://github.com/RAMPAGELLC/KnightPackageManager
  Repository: https://github.com/RAMPAGELLC/knight
- Documentation: https://knight.vq9o.com
+ Documentation: https://knight.metatable.dev
 ]]
 
 require(game:GetService("ReplicatedStorage").Packages.Knight).Core.Init()

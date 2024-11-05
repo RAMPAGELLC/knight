@@ -13,7 +13,7 @@
  License: MIT
  
  Repository: https://github.com/RAMPAGELLC/knight
- Documentation: https://knight.vq9o.com
+ Documentation: https://knight.metatable.dev
 ]]
 
 -- TODO: A massive code cleanup is required.

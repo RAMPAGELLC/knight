@@ -13,7 +13,7 @@
  License: MIT
  
  Repository: https://github.com/RAMPAGELLC/knight
- Documentation: https://knight.vq9o.com
+ Documentation: https://knight.metatable.dev
 ]]
  
 export type KnightInternal = any

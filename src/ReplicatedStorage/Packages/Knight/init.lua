@@ -18,7 +18,7 @@
 
  Links:
  Repository: https://github.com/RAMPAGELLC/knight
- Documentation: https://knight.vq9o.com
+ Documentation: https://knight.metatable.dev
 ]]
 
 -- TODO: Rewrite _G API, and force everything as proper metatables for fixes + self.Services to work properly.
