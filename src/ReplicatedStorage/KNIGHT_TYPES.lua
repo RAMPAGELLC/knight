@@ -16,47 +16,89 @@
  Documentation: https://knight.metatable.dev
 ]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SharedKnight = ReplicatedStorage:WaitForChild("Knight")
+
+local Maid = require(SharedKnight:WaitForChild("Objects"):WaitForChild("Maid"))
+
 export type int = number
 export type integer = int
 export type void = nil
 export type Callable = () -> void
-export type KnightService = table?
+
+export type KnightObject = KnightClass | Instance
 
 export type KnightInit = {
-	InitKnight: (Services: table | nil, KnightCore: KnightCore) -> Knight,
+	InitKnight: (Services: any | nil, KnightCore: KnightCore) -> KnightClass,
 }
 
 export type KnightCore = {
-	PrintVersion: Callable,
-	Log: (Log: string, any...) -> void,
+	Log: (Log: "print" | "warn" | "error", ...any) -> void,
 	Import: (Path: string) -> void,
 	GetShared: () -> KnightInit,
-	Init: () -> (Knight, Knight),
-	GetService: (ServiceName: string, IsShared: boolean | nil) -> KnightService,
+	Init: () -> (KnightClass, KnightClass),
+	GetService: (ServiceName: string, IsShared: boolean | nil) -> KnightObject,
+	GetStorage: (isShared: boolean | nil) -> KnightObject,
 }
 
-export type Knight = {
+export type KnightRuntimeBase = {
 	Inited: boolean,
+	initStart: number,
 	Player: Player | boolean,
-	Shared: { any },
-	Enum: { any },
+
+	KnightCache: {
+		UpdateEvent: BindableEvent,
+	},
+	Enum: { [string]: string },
 	Types: { any },
-	Shared: { any } | boolean,
-	Database: { any }?,
-	Objects: { any }?,
-	Services: { any }?,
+
 	Internal: {
 		IsServer: boolean,
 		Version: string,
 		Core: KnightCore,
 		runType: string,
 	},
-	KnightCache: { any },
+
+	Objects: { KnightObject }?,
+	Services: { KnightObject }?,
 }
 
-export type KnightEvent = {
-	Name: string,
-	Fire: Callable,
+export type KnightShared = KnightRuntimeBase & {
+	Database: { KnightObject }?,
+}
+
+export type KnightClass = KnightRuntimeBase & {
+	Priority: number?,
+	moduleStart: number,
+	MemoryKBStart: number,
+	CanInit: boolean,
+	CanUpdate: boolean,
+	CanStart: boolean,
+	internalMaid: typeof(Maid.new()),
+
+	Shared: KnightShared,
+	Remotes: typeof(require(SharedKnight:WaitForChild("Services"):WaitForChild("Remotes"))),
+
+	GetMemoryUsageKB: () -> number,
+	Unload: () -> void,
+
+	Server: {
+		[string]: (...any) -> any
+	},
+
+	Client: {
+		[string]: (...any) -> any
+	},
+
+	ServiceName: string?,
+	ServiceData: {
+		Author: string,
+		Description: string,
+	}?,
+
+	Init: Callable?,
+	Start: Callable?,
+	Update: Callable?,
 }
 
 return {}

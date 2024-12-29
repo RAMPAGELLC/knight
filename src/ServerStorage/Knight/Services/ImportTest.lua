@@ -1,4 +1,7 @@
-local Knight = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KNIGHT_TYPES = require(ReplicatedStorage:WaitForChild("KNIGHT_TYPES"))
+
+local Knight = {} :: KNIGHT_TYPES.KnightClass
 
 function Knight:Init()
 	local Import = Knight.Internal.Core.Import

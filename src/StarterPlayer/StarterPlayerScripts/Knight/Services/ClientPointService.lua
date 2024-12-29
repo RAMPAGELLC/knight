@@ -1,4 +1,7 @@
-local ClientPointsService = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local KNIGHT_TYPES = require(ReplicatedStorage:WaitForChild("KNIGHT_TYPES"))
+
+local ClientPointsService = {} :: KNIGHT_TYPES.KnightClass
 
 function ClientPointsService:Start()
     warn("ClientPointsService has started!")
