@@ -9,6 +9,12 @@ https://knight.metatable.dev
 * https://knight.metatable.dev/contribution/framework
 
 # Tools
+### Knight CLI Client
+CLI written in TypeScript for initing a new knight project and updating.
+* https://github.com/RAMPAGELLC/KnightCLI
+
+Install via running ``npm install -g @rampagecorp/knight``. To use, run ``knight -h``.
+
 ### KPM.client (CLI)
 KPM (Knight Package Manager) v2 CLI written in Typescript.
 * https://github.com/RAMPAGELLC/kpm.client
