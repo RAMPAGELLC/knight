@@ -34,7 +34,6 @@ export type KnightInit = {
 
 export type KnightCore = {
 	Log: (Log: "print" | "warn" | "error", ...any) -> void,
-	Import: (Path: string) -> void,
 	GetShared: () -> KnightInit,
 	Init: () -> (KnightClass, KnightClass),
 	GetService: (ServiceName: string, IsShared: boolean | nil) -> KnightObject,
@@ -79,7 +78,9 @@ export type KnightClass = KnightRuntimeBase & {
 	Shared: KnightShared,
 	Remotes: typeof(require(SharedKnight:WaitForChild("Services"):WaitForChild("Remotes"))),
 
+	GetMemoryUsageMB: () -> number,
 	GetMemoryUsageKB: () -> number,
+	
 	Unload: () -> void,
 
 	Server: {
@@ -92,8 +93,8 @@ export type KnightClass = KnightRuntimeBase & {
 
 	ServiceName: string?,
 	ServiceData: {
-		Author: string,
-		Description: string,
+		Author: string?,
+		Description: string?,
 	}?,
 
 	Init: Callable?,

@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 RAMPAGE Interactive, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
  
@@ -41,7 +41,7 @@ local Config = require(ReplicatedStorage:WaitForChild("KNIGHT_CONFIG"))
 local Types = require(script:WaitForChild("Types"))
 local InternalConfig = require(script:WaitForChild("InternalConfig"))
 
-local function Shutdown(DoNotReport: boolean | nil)
+local function Shutdown(DoNotReport: boolean?, errorLog: string?)
 	if DoNotReport == nil then
 		DoNotReport = false
 	end
@@ -128,6 +128,17 @@ local function Shutdown(DoNotReport: boolean | nil)
 		end
 
 		Players.PlayerAdded:Connect(p)
+
+		if not DoNotReport then
+			Config.REPORT_FUNC(
+				"Server",
+				("Report ID: %s.\nError: %s\nTraceback: %s"):format(
+					ReportID,
+					errorLog or "Unknown error occured!",
+					debug.traceback()
+				)
+			)
+		end
 	end
 end
 
@@ -207,17 +218,16 @@ local function PackFramework(tab, folder)
 			local success, mod = table.unpack(moduleResult)
 
 			if not success then
-				warn(
-					string.format(
-						"[Knight:%s:Error] Failed to import library %s.lua due to: %s.",
-						runType,
-						child.Name,
-						mod
-					)
+				local errorLog = string.format(
+					"[Knight:%s:Error] Failed to import library %s.lua due to: %s.",
+					runType,
+					child.Name,
+					mod
 				)
+				warn(errorLog)
 
 				if Config.SHUTDOWN_ON_LIBRARY_FAIL then
-					return Shutdown(true)
+					return Shutdown(true, errorLog)
 				end
 			end
 
@@ -423,27 +433,34 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		end
 	end
 
-	if Knight.util == nil then
-		warn(
-			string.format(
-				"[Knight:%s:Error] KnightLibrary.util.lua does not exist. The Knight library util is required!",
-				sRuntype
-			)
-		)
-		return Shutdown(true)
-	end
-
-	-- Get framework config
-	Config = Knight.util.SyncTable(Config, require(KnightPackage:WaitForChild("latest_config")))
-
 	-- Runtime GetService
 	function Knight:GetService(ServiceName: string): any
-		local Service = script.Parent:FindFirstChild(ServiceName, true)
+		local container = script.Parent
+		local isSharedService = ServiceName:lower():find("shared/") ~= nil
 
-		if not Service or (Service ~= nil and Modules[ServiceName] == nil) then
-			warn(string.format("[Knight:%s:Info] %s is not a valid service.", sRuntype, ServiceName))
+		if isSharedService then
+			ServiceName = ServiceName:sub(8)
+			container = ReplicatedStorage:WaitForChild("Knight")
+		end
 
-			return nil
+		local Service = container:FindFirstChild(ServiceName, true)
+
+		if isSharedService then
+			if not Service or (Service ~= nil and Modules.Shared[ServiceName] == nil) then
+				warn(string.format("[Knight:%s:Info] %s is not a valid shared service.", sRuntype, ServiceName))
+
+				return nil
+			end
+		else
+			if not Service or (Service ~= nil and Modules[ServiceName] == nil) then
+				warn(string.format("[Knight:%s:Info] %s is not a valid service.", sRuntype, ServiceName))
+
+				return nil
+			end
+		end
+
+		if isSharedService then
+			return Modules.Shared[ServiceName]
 		end
 
 		return Modules[ServiceName]
@@ -479,6 +496,10 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 
 		Modules[moduleName].GetMemoryUsageKB = function()
 			return gcinfo()
+		end
+
+		Modules[moduleName].GetMemoryUsageMB = function()
+			return Modules[moduleName].GetMemoryUsageKB * 1024
 		end
 
 		Modules[moduleName].Unload = function()
@@ -607,16 +628,16 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			Modules[moduleName].Init = nil
 
 			if not ok then
-				warn(
-					string.format(
-						"[Knight:%s:Error] %s.lua failed Service.Init() due to: %s %s.",
-						sRuntype,
-						moduleName,
-						state,
-						debug.traceback()
-					)
+				local errorLog = string.format(
+					"[Knight:%s:Error] %s.lua failed Service.Init() due to: %s %s.",
+					sRuntype,
+					moduleName,
+					state,
+					debug.traceback()
 				)
-				Shutdown(true)
+
+				warn(errorLog)
+				Shutdown(true, errorLog)
 			end
 		end
 
@@ -707,17 +728,17 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			Modules[moduleName].Start = nil
 
 			if not ok then
-				warn(
-					string.format(
-						"[Knight:%s:Error] %s.lua failed Service.Start() due to: %s.",
-						sRuntype,
-						moduleName,
-						state
-					)
+				local errorLog = string.format(
+					"[Knight:%s:Error] %s.lua failed Service.Start() due to: %s.",
+					sRuntype,
+					moduleName,
+					state
 				)
 
+				warn(errorLog)
+
 				if Config.SHUTDOWN_ON_LIBRARY_FAIL then
-					Shutdown(true)
+					Shutdown(true, errorLog)
 				end
 			end
 		end
