@@ -36,40 +36,40 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
-return function(source: Script | LocalScript | ModuleScript)
-	return function(target: string | Instance)
-		-- Default Roblox require() functionality
-		if typeof(target) == "Instance" then
-			assert(target:IsA("ModuleScript"), "Target must be a ModuleScript")
+return function(target: string | Instance)
+	-- Default Roblox require() functionality
+	if typeof(target) == "Instance" then
+		assert(target:IsA("ModuleScript"), "Target must be a ModuleScript")
 
-			return require(target)
-		end
-
-        assert(typeof(target) == "string", "Target must be a string")
-
-		-- Custom functionality for Knight
-		if target:lower():find("package/") then
-			target = target:gsub("package/", "")
-
-			assert(ReplicatedStorage:FindFirstChild("Packages"), "Packages folder not found in ReplicatedStorage")
-
-			return require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild(target))
-		end
-
-		if target:lower():find("shared/") then
-            assert(ReplicatedStorage:FindFirstChild("Knight"), "Knight folder not found in ReplicatedStorage")
-
-            return require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
-		end
-
-        if RunService:IsServer() then
-            assert(ServerStorage:FindFirstChild("Knight"), "Knight folder not found in ServerStorage")
-            return require(ServerStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
-        else
-            assert(Players.LocalPlayer.PlayerScripts:FindFirstChild("Knight"), "Knight folder not found in PlayerScripts")
-            return require(Players.LocalPlayer.PlayerScripts:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
-        end
-
-        error("Invalid src target: " .. target)
+		return require(target)
 	end
+
+	assert(typeof(target) == "string", "Target must be a string")
+
+	-- Custom functionality for Knight
+	if target:lower():find("package/") then
+		target = target:gsub("package/", "")
+
+		assert(ReplicatedStorage:FindFirstChild("Packages"), "Packages folder not found in ReplicatedStorage")
+
+		return require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild(target))
+	end
+
+	if target:lower():find("shared/") then
+		assert(ReplicatedStorage:FindFirstChild("Knight"), "Knight folder not found in ReplicatedStorage")
+
+		return require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
+	end
+
+	if RunService:IsServer() then
+		assert(ServerStorage:FindFirstChild("Knight"), "Knight folder not found in ServerStorage")
+		return require(ServerStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
+	else
+		assert(Players.LocalPlayer.PlayerScripts:FindFirstChild("Knight"), "Knight folder not found in PlayerScripts")
+		return require(
+			Players.LocalPlayer.PlayerScripts:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target)
+		)
+	end
+
+	error("Invalid src target: " .. target)
 end
