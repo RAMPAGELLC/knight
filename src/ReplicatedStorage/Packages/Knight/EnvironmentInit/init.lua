@@ -41,6 +41,30 @@ local Config = require(ReplicatedStorage:WaitForChild("KNIGHT_CONFIG"))
 local Types = require(script:WaitForChild("Types"))
 local InternalConfig = require(script:WaitForChild("InternalConfig"))
 
+local function onError(child, err)
+	local trace = debug.traceback(err, 2)
+	local message = string.format(
+		"[Knight:%s:Error] An error occurred in %s.lua:\n---- Stack trace ----\n%s",
+		runType .. (Knight.IsShared and " (Shared)" or ""),
+		child.Name,
+		trace
+	)
+
+	task.spawn(error, message, 0)
+
+	if RunService:IsServer() then
+		Config.REPORT_FUNC(
+			runType,
+			("Report ID: %s.\nError: %s"):format(
+				HttpService:GenerateGUID(false),
+				message
+			)
+		)
+	end
+
+	return message
+end
+
 local function Shutdown(DoNotReport: boolean?, errorLog: string?)
 	if DoNotReport == nil then
 		DoNotReport = false
@@ -186,21 +210,21 @@ local function PackFramework(tab, folder)
 			end
 
 			task.spawn(function()
-				moduleResult = table.pack(pcall(require, child))
+				local success, result = xpcall(function()
+					return require(child)
+				end, function(...)
+					return onError(child, ...)
+				end);
+
+				moduleResult = { success, result }
 			end)
 
-			if moduleResult == nil then
-				while moduleResult == nil and task.wait() do
-					if (tick() - moduleStart) >= 20 and not moduleStartupError then
-						warn(
-							string.format(
-								"[Knight:%s:Warning] %s.lua is taking too long to startup.",
-								runType,
-								child.Name
-							)
-						)
-						moduleStartupError = true
-					end
+			while moduleResult == nil and task.wait() do
+				if (tick() - moduleStart) >= 20 and not moduleStartupError then
+					warn(
+						string.format("[Knight:%s:Warning] %s.lua is taking too long to startup.", runType, child.Name)
+					)
+					moduleStartupError = true
 				end
 			end
 
@@ -215,15 +239,16 @@ local function PackFramework(tab, folder)
 				)
 			end
 
-			local success, mod = table.unpack(moduleResult)
+			local success, mod = unpack(moduleResult)
 
 			if not success then
 				local errorLog = string.format(
-					"[Knight:%s:Error] Failed to import library %s.lua due to: %s.",
+					"[Knight:%s:Error] Failed to import library %s.lua due to:\n%s",
 					runType,
 					child.Name,
 					mod
 				)
+
 				warn(errorLog)
 
 				if Config.SHUTDOWN_ON_LIBRARY_FAIL then
@@ -233,7 +258,18 @@ local function PackFramework(tab, folder)
 
 			local name = (typeof(mod) == "table" and mod.ServiceName ~= nil and mod.ServiceName) or child.Name
 
+			if Modules[name] ~= nil then
+				warn(string.format(
+					"[Knight:%s:Warning] A module with the name '%s' already exists in the environment. This may cause unexpected behavior and should be resolved.\nModule: %s\nPlease ensure each module has a unique ServiceName or use a different name for your module.",
+					runType,
+					child.Name,
+					mod
+				))
+			end
+
 			if typeof(mod) == "table" and not CollectionService:HasTag(child, "KNIGHT_IGNORE_MODULE") then
+				mod.src = child;
+
 				if Config.CYCLIC_INDEXING_ENABLED then
 					for k: any, v: any in pairs(Knight) do
 						if typeof(k) == "string" and k == "" then
@@ -282,6 +318,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 	local sRuntype = isShared and ("Shared:%s"):format(runType) or runType
 
 	-- Setup Knight Dictionary
+	Knight.IsShared = isShared
 	Knight.Shared = not isShared
 			and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Init")).newKnightEnvironment(
 				true,
@@ -580,7 +617,9 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = pcall(Modules[moduleName].Init)
+				ok, state = xpcall(Modules[moduleName].Init, function(...)
+					return onError(Modules[moduleName].src, ...)
+				end);
 			end)
 
 			while ok == nil and task.wait() do
@@ -677,7 +716,9 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = pcall(Modules[moduleName].Start)
+				ok, state = xpcall(Modules[moduleName].Start, function(...)
+					return onError(Modules[moduleName].src, ...)
+				end);
 			end)
 
 			while ok == nil and task.wait() do

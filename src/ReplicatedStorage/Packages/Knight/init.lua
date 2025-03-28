@@ -26,7 +26,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
-local Config = require(script.Parent:WaitForChild("KNIGHT_CONFIG"))
+local Config = require(script.Parent.Parent:WaitForChild("KNIGHT_CONFIG"))
 
 local Knight = {
 	["IsServer"] = RunService:IsServer(),

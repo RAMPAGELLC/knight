@@ -91,6 +91,8 @@ export type KnightClass = KnightRuntimeBase & {
 		[string]: (...any) -> any
 	},
 
+	src: ModuleScript?,
+	
 	ServiceName: string?,
 	ServiceData: {
 		Author: string?,
