@@ -16,8 +16,6 @@
  Documentation: https://knight.metatable.dev
 ]]
 
--- TODO: A massive code cleanup is required.
-
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
@@ -53,13 +51,7 @@ local function onError(child, err)
 	task.spawn(error, message, 0)
 
 	if RunService:IsServer() then
-		Config.REPORT_FUNC(
-			runType,
-			("Report ID: %s.\nError: %s"):format(
-				HttpService:GenerateGUID(false),
-				message
-			)
-		)
+		Config.REPORT_FUNC(runType, ("Report ID: %s.\nError: %s"):format(HttpService:GenerateGUID(false), message))
 	end
 
 	return message
@@ -167,6 +159,43 @@ local function Shutdown(DoNotReport: boolean?, errorLog: string?)
 end
 
 local function PackFramework(tab, folder)
+	-- Create metatable for the tab
+	setmetatable(tab, {
+        __index = function(t, k)
+            -- Check raw table first 
+            if rawget(t, k) then
+                local value = rawget(t, k)
+                -- Wrap functions to preserve self
+                if type(value) == "function" then
+                    return function(...)
+                        return value(t, ...)
+                    end
+                end
+                return value
+            end
+
+            -- Try to find in folder
+            local child = folder:FindFirstChild(k)
+            if child then
+                if child:IsA("ModuleScript") then
+                    -- Lazy load modules
+                    local result = require(child)
+                    -- Store raw result
+                    rawset(t, k, result) 
+                    -- But return wrapped if function
+                    if type(result) == "function" then
+                        return function(...)
+                            return result(t, ...)
+                        end
+                    end
+                    return result
+                end
+                return child
+            end
+            return nil
+        end
+    })
+
 	for _, child in pairs(folder:GetChildren()) do
 		if child.Name == "Init" or child.Name == "EnvironmentInit" then
 			continue
@@ -211,10 +240,33 @@ local function PackFramework(tab, folder)
 
 			task.spawn(function()
 				local success, result = xpcall(function()
-					return require(child)
+					local mod = require(child)
+					if type(mod) == "table" then
+						-- Create proper metatable with self reference
+						setmetatable(mod, {
+							__index = function(t, k)
+								-- Check Knight framework methods first
+								if Knight[k] then
+									return Knight[k]
+								end
+								-- Check self methods
+								if rawget(t, k) then
+									if type(rawget(t, k)) == "function" then
+										-- Bind self to functions
+										return function(...)
+											return rawget(t, k)(t, ...)
+										end
+									end
+									return rawget(t, k)
+								end
+								return nil
+							end
+						})
+					end
+					return mod
 				end, function(...)
 					return onError(child, ...)
-				end);
+				end)
 
 				moduleResult = { success, result }
 			end)
@@ -259,16 +311,18 @@ local function PackFramework(tab, folder)
 			local name = (typeof(mod) == "table" and mod.ServiceName ~= nil and mod.ServiceName) or child.Name
 
 			if Modules[name] ~= nil then
-				warn(string.format(
-					"[Knight:%s:Warning] A module with the name '%s' already exists in the environment. This may cause unexpected behavior and should be resolved.\nModule: %s\nPlease ensure each module has a unique ServiceName or use a different name for your module.",
-					runType,
-					child.Name,
-					mod
-				))
+				warn(
+					string.format(
+						"[Knight:%s:Warning] A module with the name '%s' already exists in the environment. This may cause unexpected behavior and should be resolved.\nModule: %s\nPlease ensure each module has a unique ServiceName or use a different name for your module.",
+						runType,
+						child.Name,
+						mod
+					)
+				)
 			end
 
 			if typeof(mod) == "table" and not CollectionService:HasTag(child, "KNIGHT_IGNORE_MODULE") then
-				mod.src = child;
+				mod.src = child
 
 				if Config.CYCLIC_INDEXING_ENABLED then
 					for k: any, v: any in pairs(Knight) do
@@ -619,7 +673,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			task.spawn(function()
 				ok, state = xpcall(Modules[moduleName].Init, function(...)
 					return onError(Modules[moduleName].src, ...)
-				end);
+				end, Modules[moduleName])
 			end)
 
 			while ok == nil and task.wait() do
@@ -718,7 +772,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			task.spawn(function()
 				ok, state = xpcall(Modules[moduleName].Start, function(...)
 					return onError(Modules[moduleName].src, ...)
-				end);
+				end, Modules[moduleName])
 			end)
 
 			while ok == nil and task.wait() do
