@@ -9,6 +9,11 @@ https://knight.metatable.dev
 * https://knight.metatable.dev/contribution/framework
 
 # Tools
+### Knight VSC Extension
+Extension written in JavaScript for creating and auto-filling knight services.
+* https://marketplace.visualstudio.com/items?itemName=MetaGames.vsc-knight
+* https://github.com/RAMPAGELLC/vsc-knight
+
 ### Knight CLI Client
 CLI written in TypeScript for initing a new knight project and updating.
 * https://github.com/RAMPAGELLC/KnightCLI
