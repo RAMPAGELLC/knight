@@ -20,10 +20,11 @@ Here’s an example of how you can use cyclic indexing to call a function from a
 
 ```lua
 local Service = {}
+Service.__index = Service
 
 function Service:Start()
     -- Cyclic indexing allows you to access another service directly
-    local result = Service.Services.OtherService:CallFunction()
+    local result = self.Services.OtherService:CallFunction()
     warn("Result from OtherService: ", result)
 end
 
@@ -32,7 +33,7 @@ return Service
 
 In this example:
 
-* `Service.Services.OtherService` refers to another service called `OtherService` Running on the same context level (Server or Client), to reference a shared Service/Object use Service.Shared...
+* `self.Services.OtherService` refers to another service called `OtherService` Running on the same context level (Server or Client), to reference a shared Service/Object use `self.Shared`.
 * `CallFunction()` is a method defined within the `OtherService` service.
 
 ## How Cyclic Indexing Works

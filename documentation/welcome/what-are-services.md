@@ -21,21 +21,21 @@ To create a service, you’ll need to place a new `ModuleScript` in one of the d
 *   **`Init()`**: Called during the initialization phase of the service. This is optional and typically used for setting up any necessary data or connections before the service starts.
 
     ```lua
-    function Knight.Init()
+    function Knight:Init()
         -- Initialization logic here
     end
     ```
 *   **`Start()`**: Called when the service is ready to begin its main functionality. This is also optional and is typically used to start processes like event listeners, timers, etc.
 
     ```lua
-    function Knight.Start()
+    function Knight:Start()
         -- Start logic here
     end
     ```
 *   **`Update(deltaTime)`**: Called every frame. This function is optional and is used for tasks that need to be updated regularly, such as animations or game logic.
 
     ```lua
-    function Knight.Update(deltaTime)
+    function Knight:Update(deltaTime)
         -- Frame update logic here
     end
     ```
@@ -87,13 +87,14 @@ local Knight = {
     CanUpdate = true,
     CanInit = true,  -- Optional, defaults to true if not specified
 }
+Knight.__index = Knight;
 
 function Knight:Init()
-    warn(Knight.ServiceName .. " Service Initialized!")
+    warn(self.ServiceName .. " Service Initialized!")
 end
 
 function Knight:Start()
-    warn(Knight.ServiceName .. " Service Started!")
+    warn(self.ServiceName .. " Service Started!")
 end
 
 function Knight:Update(deltaTime)
@@ -116,17 +117,18 @@ local Knight = {
     CanStart = true,
     CanUpdate = false,
 }
+Knight.__index = Knight;
 
-function Knight.Init()
+function Knight:Init()
     -- For client services only
-    print(Knight.Player.Name)  -- Prints the LocalPlayer's name
+    print(self.Player.Name)  -- Prints the LocalPlayer's name
     
     -- Access shared modules and functions
-    local sharedModule = Knight.Shared.SomeModule
+    local sharedModule = self.Shared.SomeModule
     sharedModule:DoSomething()
     
     -- Access server or client-specific functionality
-    Knight.Services.SomeOtherService:DoSomethingElse()
+    self.Services.SomeOtherService:DoSomethingElse()
 end
 
 return Knight
