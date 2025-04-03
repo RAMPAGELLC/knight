@@ -1,46 +1,90 @@
-# Knight
-Knight; The Roblox Game Framework. Knight is a robust framework to assist your needs with organization & tools while developing on Roblox.
+# Knight  
+Knight is a robust and modular Roblox game framework designed to help you organize your projects efficiently. It provides optional tools to enhance your workflow—but tools are **not required** to use Knight.
 
-# Documentation
+---
+
+## 📚 Documentation  
 https://knight.metatable.dev
 
-# Contribution
-* https://knight.metatable.dev/contribution/documentation
-* https://knight.metatable.dev/contribution/framework
+---
 
-# Tools
-### Knight VSC Extension
-Extension written in JavaScript for creating and auto-filling knight services.
-* https://marketplace.visualstudio.com/items?itemName=MetaGames.vsc-knight
-* https://github.com/RAMPAGELLC/vsc-knight
+## 🚀 Getting Started
 
-### Knight CLI Client
-CLI written in TypeScript for initing a new knight project and updating.
-* https://github.com/RAMPAGELLC/KnightCLI
+You can start using Knight in two ways:
 
-Install via running ``npm install -g @rampagecorp/knight``. To use, run ``knight -h``.
+### Option 1: Clone via Git
+```bash
+git clone https://github.com/RAMPAGELLC/knight.git
+```
 
-### KPM.client (CLI)
-KPM (Knight Package Manager) v2 CLI written in Typescript.
-* https://github.com/RAMPAGELLC/kpm.client
+### Option 2: Use Knight CLI
+If you have Knight CLI installed:
+```bash
+knight init
+```
 
-Install via executeable at https://github.com/RAMPAGELLC/kpm.client/releases/tag/installer-v1.0.1 or run ``npm i -g kpm.client``. To use, run ``kpm -h``.
+---
 
-### Knight Script Profiler (KSP)
-Debug Knight framework services live.
-* https://create.roblox.com/store/asset/16837740534/Knight-Live-Script-Profiler
-* https://github.com/RAMPAGELLC/KnightProfiler
+## 🛠 Tools (Optional)
 
-### RAMPAGE CLI (RCLI) (deprecated)
-Required to install KPM modules.
-* https://create.roblox.com/marketplace/asset/7232500201/RAMPAGE-CLI
+These tools are **optional** and exist to improve your workflow with Knight.
 
-### Knight Services Manager (KSM) (deprecated)
-Recommended tool to aid with managing services. KSM is a basic rough-draft, issues may occur.
-* https://create.roblox.com/marketplace/asset/13168343690/Knight-Services-Manager
-  
-### Knight Package Manager (KPM) (deprecated)
-* https://github.com/RAMPAGELLC/KnightPackageManager
+### ✅ Knight VSC Extension  
+Create and autofill Knight services in VS Code.
+- [Marketplace](https://marketplace.visualstudio.com/items?itemName=MetaGames.vsc-knight)  
+- [GitHub](https://github.com/RAMPAGELLC/vsc-knight)
 
-# License
-See https://github.com/RAMPAGELLC/knight/blob/main/LICENSE
+---
+
+### ✅ Knight CLI  
+Initialize and manage Knight projects via terminal.  
+- [GitHub](https://github.com/RAMPAGELLC/KnightCLI)  
+```bash
+npm install -g @rampagecorp/knight
+knight -h
+```
+
+---
+
+### ✅ KPM.client (Knight Package Manager v2)  
+Install and manage Knight packages.  
+- [GitHub](https://github.com/RAMPAGELLC/kpm.client)  
+- [Installer](https://github.com/RAMPAGELLC/kpm.client/releases/tag/installer-v1.0.1)  
+```bash
+npm install -g kpm.client
+kpm -h
+```
+
+---
+
+### ✅ Knight Script Profiler (KSP)  
+Live script debugging for Knight framework services.  
+- [Roblox Asset](https://create.roblox.com/store/asset/16837740534/Knight-Live-Script-Profiler)  
+- [GitHub](https://github.com/RAMPAGELLC/KnightProfiler)
+
+---
+
+## 🧾 Deprecated Tools
+
+### ❌ RAMPAGE CLI (RCLI)  
+Previously required for installing KPM modules.  
+- [Roblox Asset](https://create.roblox.com/marketplace/asset/7232500201/RAMPAGE-CLI)
+
+### ❌ Knight Services Manager (KSM)  
+Basic GUI for managing Knight services (early prototype).  
+- [Roblox Asset](https://create.roblox.com/marketplace/asset/13168343690/Knight-Services-Manager)
+
+### ❌ Knight Package Manager (KPM v1)  
+- [GitHub](https://github.com/RAMPAGELLC/KnightPackageManager)
+
+---
+
+## 🤝 Contribute  
+We welcome contributions!  
+- [Contribute to Documentation](https://knight.metatable.dev/contribution/documentation)  
+- [Contribute to Framework](https://knight.metatable.dev/contribution/framework)
+
+---
+
+## 📄 License  
+[MIT License](https://github.com/RAMPAGELLC/knight/blob/main/LICENSE)
