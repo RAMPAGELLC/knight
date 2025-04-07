@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local KNIGHT_TYPES = require(ReplicatedStorage:WaitForChild("KNIGHT_TYPES"))
+local require = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Knight"):WaitForChild("require"))
 
 local ClientPointsService = {} :: KNIGHT_TYPES.KnightClass
 
@@ -7,6 +8,9 @@ function ClientPointsService:Start()
 	warn("ClientPointsService has started!")
 	task.wait(1)
 	warn("Got local points:", ClientPointsService.Server.PointService:GetLocalPoints())
+
+	warn("Import test - GetService()", self:GetService("TestClientService"):foo())
+	warn("Require test", require("TestClientService"):bar())
 end
 
 function ClientPointsService:Init()
@@ -20,6 +24,8 @@ function ClientPointsService:Init()
 		local b = false
 		assert(b == true, "expected b to be true")
     end)
+	
+	warn(self)
 end
 
 return ClientPointsService
