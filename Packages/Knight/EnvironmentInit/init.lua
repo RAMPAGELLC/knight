@@ -161,40 +161,40 @@ end
 local function PackFramework(tab, folder)
 	-- Create metatable for the tab
 	setmetatable(tab, {
-        __index = function(t, k)
-            -- Check raw table first 
-            if rawget(t, k) then
-                local value = rawget(t, k)
-                -- Wrap functions to preserve self
-                if type(value) == "function" then
-                    return function(...)
-                        return value(t, ...)
-                    end
-                end
-                return value
-            end
+		__index = function(t, k)
+			-- Check raw table first
+			if rawget(t, k) then
+				local value = rawget(t, k)
+				-- Wrap functions to preserve self
+				if type(value) == "function" then
+					return function(...)
+						return value(t, ...)
+					end
+				end
+				return value
+			end
 
-            -- Try to find in folder
-            local child = folder:FindFirstChild(k)
-            if child then
-                if child:IsA("ModuleScript") then
-                    -- Lazy load modules
-                    local result = require(child)
-                    -- Store raw result
-                    rawset(t, k, result) 
-                    -- But return wrapped if function
-                    if type(result) == "function" then
-                        return function(...)
-                            return result(t, ...)
-                        end
-                    end
-                    return result
-                end
-                return child
-            end
-            return nil
-        end
-    })
+			-- Try to find in folder
+			local child = folder:FindFirstChild(k)
+			if child then
+				if child:IsA("ModuleScript") then
+					-- Lazy load modules
+					local result = require(child)
+					-- Store raw result
+					rawset(t, k, result)
+					-- But return wrapped if function
+					if type(result) == "function" then
+						return function(...)
+							return result(t, ...)
+						end
+					end
+					return result
+				end
+				return child
+			end
+			return nil
+		end,
+	})
 
 	for _, child in pairs(folder:GetChildren()) do
 		if child.Name == "Init" or child.Name == "EnvironmentInit" then
@@ -245,7 +245,7 @@ local function PackFramework(tab, folder)
 						if mod.Standalone ~= nil and mod.Standalone == true then
 							return mod
 						end
-						
+
 						-- Create proper metatable with self reference
 						setmetatable(mod, {
 							__index = function(t, k)
@@ -264,7 +264,7 @@ local function PackFramework(tab, folder)
 									return rawget(t, k)
 								end
 								return nil
-							end
+							end,
 						})
 					end
 					return mod
@@ -580,12 +580,66 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		Knight.KnightCache.UpdateEvent = Knight.Shared.Objects.Event.new()
 	end
 
-	table.sort(Modules, function(module1, module2)
-		return (module1.Priority or 1) < (module2.Priority or 1)
+	-- Automatic dependency priority; make sure the dependencies are loaded first.
+	-- Module.Dependencies = { "Module1", "shared/Module2" }
+
+	local visited = {}
+	local priorityCounter = 0
+
+	local function resolveDependencyPriority(moduleName: string, isSharedDependency: boolean?)
+		isSharedDependency = isSharedDependency or false
+
+		if visited[moduleName] then
+			return
+		end
+
+		visited[moduleName] = true
+
+		local module = isSharedDependency and Modules.Shared[moduleName] or Modules[moduleName]
+
+		if not module then
+			warn(string.format("[Knight:%s:Info] %s is not a valid service.", sRuntype, moduleName))
+			return
+		end
+
+		if module.Dependencies and type(module.Dependencies) == "table" then
+			if #module.Dependencies == 0 then
+				return
+			end
+			
+			for _, dependencyName in ipairs(module.Dependencies) do
+				local isSharedDependency2 = dependencyName:lower():find("shared/") ~= nil
+
+				if dependencyName:lower():find("shared/") ~= nil then
+					dependencyName = dependencyName:sub(8)
+				end
+
+				resolveDependencyPriority(dependencyName, isSharedDependency2)
+			end
+		end
+
+		priorityCounter += 1
+		(isSharedDependency and Modules.Shared[moduleName] or Modules[moduleName]).Priority = priorityCounter;
+	end
+
+	for moduleName in pairs(Modules) do
+		resolveDependencyPriority(moduleName)
+	end
+
+	visited = nil
+	priorityCounter = nil
+
+	-- Startup priority sorting, Sorted by highest to lowest.
+	table.sort(Modules, function(a, b)
+		return (a.Priority or 1) > (b.Priority or 1)
 	end)
 
 	-- Prepare modules
 	for moduleName: any, module: any in pairs(Modules) do
+		if module.Standalone ~= nil and module.Standalone then
+			continue
+		end
+
 		Modules[moduleName].moduleStart = tick()
 		Modules[moduleName].internalMaid = Maid.new()
 
@@ -666,8 +720,12 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 		end
 	end
 
-	-- Startup modules
+	-- Init modules
 	for moduleName: any, module: any in pairs(Modules) do
+		if module.Standalone ~= nil and module.Standalone then
+			continue
+		end
+
 		if
 			Modules[moduleName].Init ~= nil
 			and typeof(Modules[moduleName].Init) == "function"
@@ -762,11 +820,16 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 	end
 
 	if initCanceled then
-		warn(string.format("[Knight:%s:Error] Startup aborted for enivornment.", runType))
+		warn(string.format("[Knight:%s:Error] Init aborted for enivornment.", runType))
 		return false
 	end
 
+	-- Start modules
 	for moduleName: any, module: any in pairs(Modules) do
+		if module.Standalone ~= nil and module.Standalone then
+			continue
+		end
+
 		if
 			Modules[moduleName].Start ~= nil
 			and typeof(Modules[moduleName].Start) == "function"

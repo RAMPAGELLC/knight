@@ -28,6 +28,7 @@
 
     local module = require("shared/module")
     local somePackage = require("package/module")
+    local somePackage2 = require("@/module")
     local external = require(ReplicatedStorage.SomeModule)
 ]]
 
@@ -35,6 +36,23 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
+
+local waitForChildTimeout = 5
+
+local aliases = {
+	["@"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
+	["packages"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
+	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout)
+		:WaitForChild("Services", waitForChildTimeout),
+}
+
+local function waitForPath(root: Instance, path: string, timeout: number): Instance
+	local current = root
+	for segment in path:gmatch("[^/]+") do
+		current = current:WaitForChild(segment, timeout)
+	end
+	return current
+end
 
 return function(target: string | Instance)
 	-- Default Roblox require() functionality
@@ -45,29 +63,36 @@ return function(target: string | Instance)
 	end
 
 	assert(typeof(target) == "string", "Target must be a string")
+	assert(target ~= "", "Target cannot be an empty string")
 
-	-- Custom functionality for Knight
-	if target:lower():find("package/") then
-		target = target:gsub("package/", "")
+	for alias, path in pairs(aliases) do
+		alias = alias:lower()
 
-		assert(ReplicatedStorage:FindFirstChild("Packages"), "Packages folder not found in ReplicatedStorage")
+		if target:lower():find(alias .. "/") then
+			target = target:gsub("^" .. alias .. "/", "")
+			assert(path, alias .. " folder not found in alias.")
 
-		return require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild(target))
-	end
-
-	if target:lower():find("shared/") then
-		assert(ReplicatedStorage:FindFirstChild("Knight"), "Knight folder not found in ReplicatedStorage")
-
-		return require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
+			return require(waitForPath(path, target, waitForChildTimeout))
+		end
 	end
 
 	if RunService:IsServer() then
-		assert(ServerStorage:FindFirstChild("Knight"), "Knight folder not found in ServerStorage")
-		return require(ServerStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target))
-	else
-		assert(Players.LocalPlayer.PlayerScripts:FindFirstChild("Knight"), "Knight folder not found in PlayerScripts")
+		assert(ServerStorage:WaitForChild("Knight", waitForChildTimeout), "Knight folder not found in ServerStorage")
 		return require(
-			Players.LocalPlayer.PlayerScripts:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild(target)
+			ServerStorage:WaitForChild("Knight", waitForChildTimeout)
+				:WaitForChild("Services", waitForChildTimeout)
+				:WaitForChild(target, waitForChildTimeout)
+		)
+	else
+		assert(
+			Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout),
+			"Knight folder not found in PlayerScripts"
+		)
+		return require(
+			Players.LocalPlayer.PlayerScripts
+				:WaitForChild("Knight", waitForChildTimeout)
+				:WaitForChild("Services", waitForChildTimeout)
+				:WaitForChild(target, waitForChildTimeout)
 		)
 	end
 
