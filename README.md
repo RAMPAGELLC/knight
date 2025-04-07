@@ -10,7 +10,7 @@ https://knight.metatable.dev
 
 ## 🚀 Getting Started
 
-You can start using Knight in two ways:
+You can start using Knight in three ways:
 
 ### Option 1: Clone via Git
 ```bash
@@ -22,6 +22,9 @@ If you have Knight CLI installed:
 ```bash
 knight init
 ```
+
+### Option 3: Download RBXL Binary via GitHub releases
+https://github.com/RAMPAGELLC/knight/releases
 
 ---
 
