@@ -12,9 +12,9 @@ Services are module scripts that serve a specific purpose within your experience
 
 To create a service, you’ll need to place a new `ModuleScript` in one of the designated Knight service folders based on its purpose:
 
-* **Server-side services**: `src/ServerStorage/Knight`
-* **Client-side services**: `src/StarterPlayer/StarterPlayerScripts/Knight`
-* **Shared services**: `src/ReplicatedStorage/Knight`
+* **Server-side services**: `Server`
+* **Client-side services**: `Client`
+* **Shared services**: `Shared`
 
 ## Default Functions
 
@@ -46,8 +46,8 @@ To create a service, you’ll need to place a new `ModuleScript` in one of the d
 
     These booleans determine whether the `Start()`, `Update()`, and `Init()` functions will be called.
 
-{% hint style="info" %}
-If you're using a third-party module and don't want Knight to call its default start function, set `CanStart` to `false`.
+{% hint style="success" %}
+If you're using a third-party module and don't want Knight to call its default start functions or inject the framework, set `Standalone`to `true`. This will disable the metatable inject and other framework features to ensure it remains Standalone.
 {% endhint %}
 
 ### Priority Startup
@@ -78,57 +78,50 @@ Each service in Knight follows a standard template structure:
 
 ```lua
 local Knight = {
+    -- Optional variables
     ServiceName = script.Name,
     ServiceData = {
         Author = "YourName",
         Description = "Description of what this service does"
     },
+    
+    -- Defaults to true if not specified.
     CanStart = true,
     CanUpdate = true,
-    CanInit = true,  -- Optional, defaults to true if not specified
+    CanInit = true,
+    
+    -- Automatic .Priority calculation; this forces the dependencies to start before
+    -- this service/controller does.
+    Dependencies = {
+        "shared/someAPI",
+        "PlayerData"
+    }
 }
+
 Knight.__index = Knight;
 
+-- Optional
 function Knight:Init()
     warn(self.ServiceName .. " Service Initialized!")
+    
+    -- For client services only
+    print(self.Player.Name)  -- self.Player is an reference to the LocalPlayer.
+    
+    -- Access shared modules and functions
+    self.Shared.SomeSharedModule:DoSomething()
+    
+    -- Access server or client-specific functionality
+    self.Services.SomeOtherService:DoSomethingElse()
 end
 
+-- Optional
 function Knight:Start()
     warn(self.ServiceName .. " Service Started!")
 end
 
+-- Optional
 function Knight:Update(deltaTime)
-    -- This is ran every frame
-end
-
-return Knight
-
-```
-
-## Example Service Class
-
-```lua
-local Knight = {
-    ServiceName = script.Name,
-    ServiceData = {
-        Author = "YourName",
-        Description = "This service manages the game's UI"
-    },
-    CanStart = true,
-    CanUpdate = false,
-}
-Knight.__index = Knight;
-
-function Knight:Init()
-    -- For client services only
-    print(self.Player.Name)  -- Prints the LocalPlayer's name
-    
-    -- Access shared modules and functions
-    local sharedModule = self.Shared.SomeModule
-    sharedModule:DoSomething()
-    
-    -- Access server or client-specific functionality
-    self.Services.SomeOtherService:DoSomethingElse()
+    -- This is ran every frame; this works on server & client!
 end
 
 return Knight
