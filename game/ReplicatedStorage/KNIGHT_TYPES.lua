@@ -73,6 +73,7 @@ export type KnightClass = KnightRuntimeBase & {
 	CanInit: boolean,
 	CanUpdate: boolean,
 	CanStart: boolean,
+	Standalone: boolean,
 	internalMaid: typeof(Maid.new()),
 
 	Shared: KnightShared,

@@ -242,6 +242,10 @@ local function PackFramework(tab, folder)
 				local success, result = xpcall(function()
 					local mod = require(child)
 					if type(mod) == "table" then
+						if mod.Standalone ~= nil and mod.Standalone == true then
+							return mod
+						end
+						
 						-- Create proper metatable with self reference
 						setmetatable(mod, {
 							__index = function(t, k)
@@ -602,6 +606,7 @@ Knight.newKnightEnvironment = function(isShared: boolean, KnightInternal: Types.
 			Modules[moduleName] = nil
 		end
 
+		Modules[moduleName].Standalone = false
 		Modules[moduleName].MemoryKBStart = Modules[moduleName].GetMemoryUsageKB()
 		Modules[moduleName].CanInit = Modules[moduleName].CanInit ~= nil and Modules[moduleName].CanInit or true
 		Modules[moduleName].CanUpdate = Modules[moduleName].CanUpdate ~= nil and Modules[moduleName].CanUpdate or true
