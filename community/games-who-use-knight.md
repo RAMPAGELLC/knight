@@ -12,13 +12,13 @@ Project group.
 
 {% embed url="https://www.roblox.com/groups/32462483/Apollo-Bay#!/about" %}
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Emergency Response: UK
 
 {% embed url="https://www.roblox.com/games/18903710138/Emergency-Response-UK" %}
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Skull Island
 
