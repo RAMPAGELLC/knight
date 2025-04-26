@@ -1,0 +1,18 @@
+[package]
+name = "vq9o/knight"
+description = "A modern light-weight framework built specifically for Roblox."
+license = "MIT"
+authors = ["RAMPAGE Interactive", "vq9o", "Epicness", "Oalppo"]
+version = "1.0.4-prod"
+
+homepage = "https://knight.metatable.dev"
+repository = "https://github.com/RAMPAGELLC/knight"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+exclude = ["**"]
+include = ["src", "src/*", "default.project.json", "wally.lock", "wally.toml"]
+
+[dependencies]
+maid = "devsparkle/maid@2.1.0"
+promise = "evaera/promise@4.0.0"

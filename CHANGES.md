@@ -1,5 +1,9 @@
 ```diff
-+ New 'Service.Dependencies = { "Module1", "shared/Module2" }'; Automatic Startup Priority ordering.
-+ Misc Fixes
-+ Custom-require now supports custom aliases, and '@' now references packages.
++ Removed `Knight.cron`
++ Removed `Knight.zone`
++ Repository re-organized to seperate source-code & template.
++ Published to Wally
 ```
+
+# ⚠️ CLI Installation Broken ⚠️
+The Knight CLI has not yet been updated to handle the new repository organization, for now its recommended to use wally or manually install.

@@ -1,2 +1,1 @@
--- Wrapper/Link to default packaged maid.
-return require(game:GetService("ReplicatedStorage"):WaitForChild("Knight"):WaitForChild("Objects"):WaitForChild("Maid"))
+return require(script.Parent._Index["devsparkle_maid@2.1.0"]["maid"])

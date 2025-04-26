@@ -1,0 +1,51 @@
+{
+  "name": "project",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$ignoreUnknownInstances": true,
+      "$path": "game/ReplicatedStorage",
+      "Knight": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "shared"
+      },
+      "Packages": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "Packages"
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$ignoreUnknownInstances": true,
+      "$path": "game/ServerScriptService"
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
+      "$path": "game/ServerStorage",
+      
+      "Knight": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "$path": "server"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$ignoreUnknownInstances": true,
+        "$path": "game/StarterPlayer/StarterPlayerScripts",
+        "Knight": {
+          "$className": "Folder",
+          "$ignoreUnknownInstances": true,
+          "$path": "client"
+        }
+      },
+      "$ignoreUnknownInstances": true
+    }
+  }
+}

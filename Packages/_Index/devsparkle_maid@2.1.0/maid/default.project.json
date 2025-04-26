@@ -1,0 +1,7 @@
+{
+  "emitLegacyScripts": false,
+  "name": "maid",
+  "tree": {
+    "$path": "src/MaidClass.luau"
+  }
+}
