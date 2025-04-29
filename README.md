@@ -16,7 +16,7 @@ git clone https://github.com/RAMPAGELLC/knight.git
 
 ### Option 2: Using Wally
 
-Add `knight = "vq9o/knight@1.0.4-prod"` to `wally.toml` then run `wally install`.
+Add `knight = "vq9o/knight@1.0.5"` to `wally.toml` then run `wally install`.
 
 ### Option 3: Using Knight CLI
 
