@@ -1,9 +1,12 @@
 releases/*.lock
 sourcemap.json
-*.exe
-*.mp4
-*.dll
 roblox.yml
 roblox.toml
 binary
 PERSONAL_TODO.md
+/ServerPackages
+/ServerPackages/*
+/Packages
+/Packages/*
+*.rbxl
+rojo_build.rbxl

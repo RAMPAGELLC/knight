@@ -40,10 +40,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local waitForChildTimeout = 5
 
 local aliases = {
+	["core"] = require(script.Parent.constructor),
 	["@"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
 	["packages"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
-	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout)
-		:WaitForChild("Services", waitForChildTimeout),
+	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout):WaitForChild("Services", waitForChildTimeout),
 }
 
 local function waitForPath(root: Instance, path: string, timeout: number): Instance
@@ -54,7 +54,29 @@ local function waitForPath(root: Instance, path: string, timeout: number): Insta
 	return current
 end
 
-return function(target: string | Instance)
+-- Exporting only specific methods/variables of a module.
+-- i.e: local New, Value = require("@/Fusion", {"New", "Value"}) would only provide New & Value from Fusion.
+local function export(module: any, exports: table?): any
+	assert(typeof(module) == "table", "Module must be a table")
+
+	if not exports then
+		return module
+	end
+	
+	assert(typeof(exports) == "table", "Exports must be a table")
+
+	local exported = {}
+
+	for i,v in pairs(exports) do
+		local value = module[v];
+		assert(value, `Module Export '{v}' not found in module`)
+		table.insert(exported, value)
+	end
+	
+	return unpack(exported)
+end
+
+return function(target: string | Instance, exports: table?): any
 	-- Default Roblox require() functionality
 	if typeof(target) == "Instance" then
 		assert(target:IsA("ModuleScript"), "Target must be a ModuleScript")
@@ -65,36 +87,43 @@ return function(target: string | Instance)
 	assert(typeof(target) == "string", "Target must be a string")
 	assert(target ~= "", "Target cannot be an empty string")
 
-	for alias, path in pairs(aliases) do
-		alias = alias:lower()
+	for alias, source in pairs(aliases) do
+		local aliasLower = alias:lower()
+		if target:lower():find(aliasLower .. "/") then
+			local path = target:gsub("^" .. aliasLower .. "/", "")
+			assert(source, alias .. " alias not found")
 
-		if target:lower():find(alias .. "/") then
-			target = target:gsub("^" .. alias .. "/", "")
-			assert(path, alias .. " folder not found in alias.")
+			if typeof(source) == "Instance" then
+				if source:IsA("Folder") then
+					return export(require(waitForPath(source, path, waitForChildTimeout)), exports)
+				elseif source:IsA("ModuleScript") then
+					return export(require(source), exports)
+				else
+					error(`Alias '{alias}' points to unsupported Instance type`)
+				end
+			elseif typeof(source) == "table" then
+				local current = source
+				for segment in path:gmatch("[^/]+") do
+					current = current[segment]
+					assert(current, `Module '{segment}' not found in alias '{alias}'`)
+				end
 
-			return require(waitForPath(path, target, waitForChildTimeout))
+				if typeof(current) == "Instance" and current:IsA("ModuleScript") then
+					return export(require(current), exports)
+				end
+				
+				return export(current, exports)
+			else
+				error(`Alias '{alias}' must be an Instance or table`)
+			end
 		end
 	end
 
-	if RunService:IsServer() then
-		assert(ServerStorage:WaitForChild("Knight", waitForChildTimeout), "Knight folder not found in ServerStorage")
-		return require(
-			ServerStorage:WaitForChild("Knight", waitForChildTimeout)
-				:WaitForChild("Services", waitForChildTimeout)
-				:WaitForChild(target, waitForChildTimeout)
-		)
-	else
-		assert(
-			Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout),
-			"Knight folder not found in PlayerScripts"
-		)
-		return require(
-			Players.LocalPlayer.PlayerScripts
-				:WaitForChild("Knight", waitForChildTimeout)
-				:WaitForChild("Services", waitForChildTimeout)
-				:WaitForChild(target, waitForChildTimeout)
-		)
-	end
+	-- Fallback to Knight/Services/
+	local knightRoot = if RunService:IsServer()
+		then ServerStorage:WaitForChild("Knight", waitForChildTimeout)
+		else Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout)
+	assert(knightRoot, "Knight folder not found")
 
-	error("Invalid src target: " .. target)
-end
+	return export(require(knightRoot:WaitForChild("Services", waitForChildTimeout):WaitForChild(target, waitForChildTimeout)), exports)
+end;

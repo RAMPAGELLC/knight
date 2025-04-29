@@ -16,4 +16,4 @@
  Documentation: https://knight.metatable.dev
 ]]
 
-require(game:GetService("ReplicatedStorage").Packages.knight).Core.Init()
+require(game:GetService("ReplicatedStorage").Packages.knight):Init()

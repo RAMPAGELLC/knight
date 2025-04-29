@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
 local KNIGHT_TYPES = require(ReplicatedStorage:WaitForChild("KNIGHT_TYPES"))
-local require = require(Packages:WaitForChild("knight")).require
+local require = require(require(Packages:WaitForChild("knight")).import)
 
 local ClientPointsService = {} :: KNIGHT_TYPES.KnightClass
 

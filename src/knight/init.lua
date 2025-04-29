@@ -26,54 +26,29 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
-local Config = require(ReplicatedStorage:WaitForChild("KNIGHT_CONFIG"))
+local Log = require(script.core_class.Log)
+local KnightCore = require(script.constructor)
 
-local Knight = {
-	["IsServer"] = RunService:IsServer(),
-	["Version"] = "<v1.0.4-prod> KNIGHT FRAMEWORK on Roblox "
-		.. (RunService:IsStudio() and "Studio" or "Experience")
-		.. " | Experience Version: "
-		.. version(),
-	["Core"] = {},
-	["runType"] = RunService:IsClient() and "Client" or "Server",
-}
-
-Knight.library = script:WaitForChild("library")
-Knight.manifest = script:WaitForChild("manifest")
-Knight.require = require(script:WaitForChild("require"))
-Knight.maid = require(script.Parent:WaitForChild("maid"))
-Knight.promise = require(script.Parent:WaitForChild("promise"))
-
-function Knight.Core.Error(...)
-	warn("[Knight Framework] [ERROR] [" .. Knight.Version .. "]", ..., debug.traceback())
+function KnightCore:PrintVersion()
+	return Log(Log.LEVEL.INFO, KnightCore.Version)
 end
 
-function Knight.Core.Log(...)
-	warn("[Knight Framework] [LOG] [" .. Knight.Version .. "]", ...)
-end
-
-function Knight:PrintVersion()
-	Knight.Core.Log(Knight.Version)
-end
-
-function Knight.Core:GetShared()
+function KnightCore:GetShared()
 	warn(
 		string.format(
 			"[Knight:%s:Error] Knight.Core:GetShared() is deprecated, please use Knight.Core:GetStorage(IsShared: boolean | nil).",
-			Knight.runType
+			KnightCore.runType
 		)
 	)
-
-	return Knight.Core:GetStorage(true)
+	return KnightCore:GetStorage(true)
 end
 
-function Knight.Core:GetStorage(IsShared: boolean | nil)
+function KnightCore:GetStorage(IsShared: boolean | nil)
 	if IsShared == nil then
 		IsShared = false
 	end
 
-	local context = RunService:IsServer() and ServerStorage:WaitForChild("Knight")
-		or Players.LocalPlayer.PlayerScripts:WaitForChild("Knight")
+	local context = RunService:IsServer() and ServerStorage:WaitForChild("Knight") or Players.LocalPlayer.PlayerScripts:WaitForChild("Knight")
 
 	if IsShared then
 		context = ReplicatedStorage:WaitForChild("Knight")
@@ -88,25 +63,32 @@ function Knight.Core:GetStorage(IsShared: boolean | nil)
 	return require(context:WaitForChild("Init"))
 end
 
-function Knight.Core:Init()
+function KnightCore:Init()
 	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("Init") then
 		local EnvironmentInit = script.EnvironmentInit:Clone()
 		EnvironmentInit.Name = "Init"
 		EnvironmentInit.Parent = ReplicatedStorage:WaitForChild("Knight")
 	end
 
-	local Storage = Knight.Core:GetStorage()
-	local RuntypeServices = Storage.newKnightEnvironment(false, Knight)
+	local Storage = KnightCore:GetStorage()
+	local RuntypeServices = Storage.new(false, KnightCore)
 	local Shared = RuntypeServices.Shared
 
-	if Config.GLOBAL_API_ENABLED then
+	if KnightCore.config.GLOBAL_API_ENABLED then
 		_G.Knight = {}
 		_G.Knight.API = RuntypeServices
 		_G.Knight.API.Shared = Shared
-		_G.Knight.Internal = Knight
+		_G.Knight.Internal = KnightCore
 	end
 
-	return Knight, _G.Knight ~= nil and _G.Knight.API or RuntypeServices
+	return KnightCore, _G.Knight ~= nil and _G.Knight.API or RuntypeServices
 end
 
-return Knight
+KnightCore.Core = {}
+
+KnightCore.Core.Init = function(...)
+	Log(Log.LEVEL.WARN, "KnightCore.Core has been deprecated in v1.0.5, please use KnightCore:Init() instead.")
+	return KnightCore:Init(...)
+end
+
+return KnightCore

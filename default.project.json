@@ -1,7 +1,6 @@
 {
-    "emitLegacyScripts": false,
-    "name": "knight",
-    "tree": {
-      "$path": "src/knight"
-    }
+  "name": "knight",
+  "tree": {
+    "$path": "src/knight"
   }
+}

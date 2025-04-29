@@ -1,0 +1,15 @@
+{
+    "robloxLsp.diagnostics.globals": [
+        "version"
+    ],
+    "stylua.targetReleaseVersion": "latest",
+    "editor.formatOnPaste": false,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "JohnnyMorganz.stylua",
+    "[luau]": {
+      "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "[lua]": {
+      "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    }
+}
