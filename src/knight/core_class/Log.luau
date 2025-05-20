@@ -27,9 +27,7 @@ LogHelper.LEVEL = {
 }
 
 LogHelper.DEFAULT_LEVEL = LogHelper.LEVEL.WARN
-LogHelper.LEVEL_NUMBER_MAP = Sift.Dictionary.map(LogHelper.LEVEL, function(i, v)
-	return v, i
-end)
+LogHelper.LEVEL_NUMBER_MAP = Sift.Dictionary.flip(LogHelper.LEVEL)
 
 function LogHelper:Log(logLevel: any, ...)
 	local args = { ... }
