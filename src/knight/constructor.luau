@@ -21,8 +21,9 @@ local KnightCore = {}
 KnightCore.started = tick()
 KnightCore.IsServer = RunService:IsServer()
 KnightCore.runType = if KnightCore.IsServer then "Server" else "Client"
+KnightCore._Version = "1.0.6"
 KnightCore.Version =
-	`Knight Framework (v1.0.5) on Roblox {(RunService:IsStudio() and "Studio" or "Experience")} | Experience Version: {game.PlaceVersion} | Client Version: {version() or "unknown version"}>`
+	`Knight Framework (v{KnightCore._Version}) on Roblox {(RunService:IsStudio() and "Studio" or "Experience")} | Experience Version: {game.PlaceVersion} | Client Version: {version() or "unknown version"}>`
 
 KnightCore.require = script.Parent.require
 KnightCore.import = KnightCore.require

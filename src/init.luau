@@ -21,4 +21,6 @@
  Documentation: https://knight.metatable.dev
 ]]  
 
-return require(script:WaitForChild("src"):WaitForChild("knight"))
+return require(
+    script:WaitForChild("src"):WaitForChild("knight")
+)

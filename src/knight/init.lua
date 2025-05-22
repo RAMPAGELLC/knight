@@ -54,19 +54,19 @@ function KnightCore:GetStorage(IsShared: boolean | nil)
 		context = ReplicatedStorage:WaitForChild("Knight")
 	end
 
-	if not context:FindFirstChild("Init") then
+	if not context:FindFirstChild("KnightInit") then
 		local EnvironmentInit = script.EnvironmentInit:Clone()
-		EnvironmentInit.Name = "Init"
+		EnvironmentInit.Name = `KnightInit`
 		EnvironmentInit.Parent = context
 	end
 
-	return require(context:WaitForChild("Init"))
+	return require(context:WaitForChild("KnightInit"))
 end
 
 function KnightCore:Init()
-	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("Init") then
+	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("KnightInit") then
 		local EnvironmentInit = script.EnvironmentInit:Clone()
-		EnvironmentInit.Name = "Init"
+		EnvironmentInit.Name = `KnightInit`
 		EnvironmentInit.Parent = ReplicatedStorage:WaitForChild("Knight")
 	end
 

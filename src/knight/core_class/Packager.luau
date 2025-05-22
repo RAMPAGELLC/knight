@@ -66,7 +66,7 @@ function FrameworkPackager:Package(Knight, Modules, tab, folder)
 	})
 
 	for _, child in pairs(folder:GetChildren()) do
-		if child.Name == "Init" or child.Name == "EnvironmentInit" then
+		if child.Name == "KnightInit" or child.Name == "EnvironmentInit" then
 			continue
 		end
 

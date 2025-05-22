@@ -57,9 +57,8 @@ end
 -- Exporting only specific methods/variables of a module.
 -- i.e: local New, Value = require("@/Fusion", {"New", "Value"}) would only provide New & Value from Fusion.
 local function export(module: any, exports: table?): any
-	assert(typeof(module) == "table", "Module must be a table")
-
-	if not exports then
+	-- If not exports or the module is returning a non-table (i.e: a Instance or function), return the module.
+	if typeof(module) ~= "table" or not exports then
 		return module
 	end
 	

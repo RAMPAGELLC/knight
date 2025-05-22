@@ -102,14 +102,12 @@ Basic GUI for managing Knight services (early prototype).
 ---
 
 ## 🤝 Contribute
-
-We welcome contributions!
-
+We welcome contributions from everyone!
 -   [Contribute to Documentation](https://knight.metatable.dev/contribution/documentation)
--   [Contribute to Framework](https://knight.metatable.dev/contribution/framework)
+-   [Contribute to Framework](https://knight.metate.dev/contribution/framework)
 
+Simply make your edits in a Fork and open a PR!
 ---
 
 ## 📄 License
-
 [MIT License](https://github.com/RAMPAGELLC/knight/blob/main/LICENSE)
