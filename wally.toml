@@ -3,7 +3,7 @@ name = "vq9o/knight"
 description = "A modern light-weight framework built specifically for Roblox."
 license = "MIT"
 authors = ["RAMPAGE Interactive", "vq9o", "Epicness", "Oalppo"]
-version = "1.0.5"
+version = "1.0.6"
 
 homepage = "https://knight.metatable.dev"
 repository = "https://github.com/RAMPAGELLC/knight"
