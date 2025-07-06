@@ -118,11 +118,14 @@ return function(target: string | Instance, exports: table?): any
 		end
 	end
 
-	-- Fallback to Knight/Services/
+	-- Fallback to `Knight/Services/` / `Knight/Controllers/` if not found in aliases
 	local knightRoot = if RunService:IsServer()
 		then ServerStorage:WaitForChild("Knight", waitForChildTimeout)
 		else Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout)
 	assert(knightRoot, "Knight folder not found")
 
-	return export(require(knightRoot:WaitForChild("Services", waitForChildTimeout):WaitForChild(target, waitForChildTimeout)), exports)
+	local contianer = knightRoot:FindFirstChild("Services") or knightRoot:FindFirstChild("Controllers")
+	assert(contianer, "Knight Services or Controllers folder not found")
+
+	return export(require(contianer:WaitForChild(target, waitForChildTimeout)), exports)
 end;

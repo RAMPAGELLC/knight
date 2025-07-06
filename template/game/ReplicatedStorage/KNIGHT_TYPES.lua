@@ -58,6 +58,7 @@ export type KnightRuntimeBase = {
 
 	Objects: { KnightObject }?,
 	Services: { KnightObject }?,
+	Controllers: { KnightObject }?,
 }
 
 export type KnightShared = KnightRuntimeBase & {

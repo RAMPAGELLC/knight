@@ -106,7 +106,7 @@ function FrameworkPackager:Package(Knight, Modules, tab, folder)
 			local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
 
 			if child.Name == "Internal" then
-				tab = Knight["Services"]
+				tab = Knight["Services"] or Knight["Controllers"] or tab
 			end
 
 			task.spawn(function()

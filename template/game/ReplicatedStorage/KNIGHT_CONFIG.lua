@@ -42,6 +42,7 @@ config = {
 		["Internal"] = 4, -- Priority level 4 (highest) for internal components
 		["Objects"] = 3, -- Priority level 3 for objects
 		["Services"] = 2, -- Priority level 2 for services
+		["Controllers"] = 2; -- Priority level 2 for controllers (services alias for client)
 	},
 }
 
