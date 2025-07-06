@@ -26,11 +26,23 @@ ErrorHandler.OnError = Instance.new("BindableEvent")
 
 function ErrorHandler:Handle(Knight, child, err)
 	local trace = debug.traceback(err, 2)
-	local message =
-		string.format("%s An error occurred in %s.lua:\n---- Stack trace ----\n%s", (if Knight.IsShared then "[shared]" else ""), child.Name, trace)
+	local message = string.format(
+		"%sAn error occurred in %s:\n---- Stack trace ----\n%s",
+		(if Knight.IsShared then " [Shared] " else ""),
+		child.Name,
+		trace
+	)
 
 	Log(Log.LEVEL.ERROR, message)
-	ErrorHandler.OnError:Fire(child.Name, runType .. (Knight.IsShared and " (Shared)" or ""), trace)
+
+	ErrorHandler.OnError:Fire(child.Name, {
+		runType = runType,
+		isShared = Knight.IsShared,
+		child = child,
+		trace = trace,
+		message = message,
+        timestamp = os.time()
+	})
 end
 
 return setmetatable(ErrorHandler, {

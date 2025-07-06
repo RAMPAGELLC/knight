@@ -24,7 +24,7 @@
 -- Example usage:
 
 --[[
-    local require = require(require..src)
+    local require = require(path.to.src)
 
     local module = require("shared/module")
     local somePackage = require("package/module")
@@ -35,15 +35,23 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local ServerStorage = game:GetService("ServerStorage")
+local ServerStorage = if RunService:IsServer() then game:GetService("ServerStorage") else nil
 
 local waitForChildTimeout = 5
+
+local knightRoot = if RunService:IsServer()
+	then ServerStorage:WaitForChild("Knight", waitForChildTimeout)
+	else Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout)
+
+assert(knightRoot, "Knight folder not found!")
 
 local aliases = {
 	["core"] = require(script.Parent.constructor),
 	["@"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
+	["@s"] = if RunService:IsServer() then ServerStorage:WaitForChild("ServerPackages", waitForChildTimeout) else ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
 	["packages"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
 	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout):WaitForChild("Services", waitForChildTimeout),
+	["objects"] = knightRoot:WaitForChild("Objects", waitForChildTimeout),
 }
 
 local function waitForPath(root: Instance, path: string, timeout: number): Instance
@@ -57,21 +65,21 @@ end
 -- Exporting only specific methods/variables of a module.
 -- i.e: local New, Value = require("@/Fusion", {"New", "Value"}) would only provide New & Value from Fusion.
 local function export(module: any, exports: table?): any
-	-- If not exports or the module is returning a non-table (i.e: a Instance or function), return the module.
+	-- If not exports or the module is returning a non-table (i.e: a Instance or function), return the module variable.
 	if typeof(module) ~= "table" or not exports then
 		return module
 	end
-	
+
 	assert(typeof(exports) == "table", "Exports must be a table")
 
 	local exported = {}
 
-	for i,v in pairs(exports) do
-		local value = module[v];
+	for i, v in pairs(exports) do
+		local value = module[v]
 		assert(value, `Module Export '{v}' not found in module`)
 		table.insert(exported, value)
 	end
-	
+
 	return unpack(exported)
 end
 
@@ -110,7 +118,7 @@ return function(target: string | Instance, exports: table?): any
 				if typeof(current) == "Instance" and current:IsA("ModuleScript") then
 					return export(require(current), exports)
 				end
-				
+
 				return export(current, exports)
 			else
 				error(`Alias '{alias}' must be an Instance or table`)
@@ -119,13 +127,8 @@ return function(target: string | Instance, exports: table?): any
 	end
 
 	-- Fallback to `Knight/Services/` / `Knight/Controllers/` if not found in aliases
-	local knightRoot = if RunService:IsServer()
-		then ServerStorage:WaitForChild("Knight", waitForChildTimeout)
-		else Players.LocalPlayer.PlayerScripts:WaitForChild("Knight", waitForChildTimeout)
-	assert(knightRoot, "Knight folder not found")
-
 	local contianer = knightRoot:FindFirstChild("Services") or knightRoot:FindFirstChild("Controllers")
 	assert(contianer, "Knight Services or Controllers folder not found")
 
 	return export(require(contianer:WaitForChild(target, waitForChildTimeout)), exports)
-end;
+end

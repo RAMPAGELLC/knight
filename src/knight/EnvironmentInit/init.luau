@@ -548,6 +548,10 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		ReplicatedStorage:SetAttribute("ServerLoaded", true)
 	end
 
+	if RunService:IsClient() and not ReplicatedStorage:GetAttribute("ClientLoaded") then
+		ReplicatedStorage:SetAttribute("ClientLoaded", true)
+	end
+
 	return self
 end
 
