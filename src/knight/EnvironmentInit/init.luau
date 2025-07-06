@@ -415,11 +415,13 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			continue
 		end
 
-		if Modules[moduleName].Init ~= nil and typeof(Modules[moduleName].Init) == "function" and Modules[moduleName].CanInit then
+		local initMethod = Modules[moduleName].Init or Modules[moduleName].init;
+
+		if initMethod and typeof(initMethod) == "function" and Modules[moduleName].CanInit then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = xpcall(Modules[moduleName].Init, function(...)
+				ok, state = xpcall(initMethod, function(...)
 					return ErrorHandler(self, Modules[moduleName].src, ...)
 				end, Modules[moduleName])
 			end)
@@ -427,7 +429,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			while ok == nil and task.wait() do
 				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
 					errorReported = true
-					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service.Init().`)
+					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service Init.`)
 				end
 
 				if errorReported or Config.DO_NOT_WAIT then
@@ -450,7 +452,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			Modules[moduleName].Init = nil
 
 			if not ok then
-				local errorLog = `{moduleName}.luau failed Service.Init() due to: {state} {debug.traceback()}`
+				local errorLog = `{moduleName}.luau failed Service Init due to: {state} {debug.traceback()}`
 				Log(Log.LEVEL.ERROR, errorLog)
 				self:Shutdown(true, errorLog)
 			end
@@ -476,11 +478,13 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			continue
 		end
 
-		if Modules[moduleName].Start ~= nil and typeof(Modules[moduleName].Start) == "function" and Modules[moduleName].CanStart then
+		local startMethod = Modules[moduleName].Start or Modules[moduleName].start;
+
+		if startMethod and typeof(startMethod) == "function" and Modules[moduleName].CanStart then
 			local start, ok, state, errorReported = tick(), nil, nil, false
 
 			task.spawn(function()
-				ok, state = xpcall(Modules[moduleName].Start, function(...)
+				ok, state = xpcall(startMethod, function(...)
 					return ErrorHandler(self, Modules[moduleName].src, ...)
 				end, Modules[moduleName])
 			end)
@@ -488,7 +492,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			while ok == nil and task.wait() do
 				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
 					errorReported = true
-					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service.Start().`)
+					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service Start.`)
 				end
 
 				if errorReported or Config.DO_NOT_WAIT then
@@ -498,7 +502,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			end
 
 			if Config.LOG_STARTUP_INFO or errorReported then
-				Log(Log.LEVEL.WARN, `{moduleName}.luau Start() function completed after {tostring(math.floor(tick() - start))} second(s).`)
+				Log(Log.LEVEL.WARN, `{moduleName}.luau Start completed after {tostring(math.floor(tick() - start))} second(s).`)
 			end
 
 			if not ok and state == nil then
@@ -512,7 +516,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			Modules[moduleName].Start = nil
 
 			if not ok then
-				local errorLog = `{moduleName}.luau failed Service.Start() due to: {state}.`
+				local errorLog = `{moduleName}.luau failed Service Start due to: {state}.`
 				Log(Log.LEVEL.ERROR, errorLog)
 
 				if Config.SHUTDOWN_ON_LIBRARY_FAIL then
