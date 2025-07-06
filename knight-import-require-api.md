@@ -25,7 +25,7 @@ Aliases are paths you can define to instances such as `@` points to `ReplicatedS
 
 ## Examples
 
-```etlua
+```lua
 local require = require(path.to.src)
 
 local module = require("shared/module")
