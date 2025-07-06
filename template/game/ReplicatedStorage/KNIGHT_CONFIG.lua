@@ -1,8 +1,3 @@
--- Get essential services for later use
-local HttpService = game:GetService("HttpService")
-local RunService = game:GetService("RunService")
-local ServerStorage = game:GetService("ServerStorage")
-
 -- Define the configuration table for the Knight framework
 local config
 
