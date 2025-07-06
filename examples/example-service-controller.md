@@ -1,6 +1,6 @@
 # Example Service/Controller
 
-```etlua
+```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 

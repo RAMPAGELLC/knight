@@ -8,7 +8,7 @@ In knight error handling is handled by the framework with some basic logging. Yo
 
 ## Examples
 
-```etlua
+```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage:WaitForChild("Packages")
 
