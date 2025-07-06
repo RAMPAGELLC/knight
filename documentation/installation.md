@@ -1,5 +1,13 @@
 # Installation
 
+{% hint style="danger" %}
+In version `v1.0.5` the project structure has been drastically changed breaking tools like the Knight CLI, Git installation, etc.
+
+
+
+You **must now use Wally** to install until we fix our tools. Add `knight = "vq9o/knight@1.0.5"` to `wally.toml` then run `wally install`.
+{% endhint %}
+
 Knight is a lightweight framework for organizing your Roblox game code using services and clean architecture.
 
 There are **three ways** to install Knight in your project:

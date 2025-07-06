@@ -22,6 +22,7 @@
 * [Execution Model](execution-model.md)
 * [Intellisense](intellisense.md)
 * [Checking if the framework has loaded](checking-if-the-framework-has-loaded.md)
+* [Error Handling](error-handling.md)
 * [Examples](examples/README.md)
   * [Example Service/Controller](examples/example-service-controller.md)
 
