@@ -97,7 +97,9 @@ function Knight:Shutdown(DoNotReport: boolean?, errorLog: string?)
 		Players.PlayerAdded:Connect(p)
 
 		if not DoNotReport then
-			Config.REPORT_FUNC("Server", ("Report ID: %s.\nError: %s\nTraceback: %s"):format(ReportID, errorLog or "Unknown error occured!", debug.traceback()))
+			pcall(function()
+				error(("Error ID: %s - Error: %s\nTraceback: %s"):format(ReportID, errorLog or "Unknown error occured!", debug.traceback()))
+			end)
 		end
 	end
 
