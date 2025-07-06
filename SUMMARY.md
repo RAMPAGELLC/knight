@@ -21,11 +21,18 @@
 * [Services vs Controllers](services-vs-controllers.md)
 * [Execution Model](execution-model.md)
 * [Intellisense](intellisense.md)
+* [Checking if the framework has loaded](checking-if-the-framework-has-loaded.md)
+* [Examples](examples/README.md)
+  * [Example Service/Controller](examples/example-service-controller.md)
 
 ## Luau API
 
 * [Knight External API](luau-api/knight-external-api.md)
 * [Knight Remotes API](luau-api/knight-remotes-api.md)
+
+***
+
+* [Knight Import/require API](knight-import-require-api.md)
 
 ## Community
 
