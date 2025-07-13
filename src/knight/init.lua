@@ -28,6 +28,11 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Log = require(script.core_class.Log)
 local KnightCore = require(script.constructor)
+local importer = require(script.require)
+
+function KnightCore:DefineImportAliases(aliases: { [string]: any })
+	importer("_defineAliases", aliases)
+end
 
 function KnightCore:PrintVersion()
 	return Log(Log.LEVEL.INFO, KnightCore.Version)

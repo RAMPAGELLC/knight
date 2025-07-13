@@ -38,7 +38,7 @@ function LogHelper:Log(logLevel: any, ...)
 	end
 
 	local context = RunService:IsServer() and "Server" or "Client"
-	local header = string.format("[Knight:%s:%s]", context, LogHelper.LEVEL_NUMBER_MAP[level] or "UNKNOWN"):lower()
+	local header = string.format("[Knight:%s:%s] ", context, LogHelper.LEVEL_NUMBER_MAP[level] or "UNKNOWN"):lower()
 
 	if level == LogHelper.LEVEL.INFO and not RunService:IsStudio() then
 		return

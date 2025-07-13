@@ -48,16 +48,19 @@ assert(knightRoot, "Knight folder not found!")
 local aliases = {
 	["core"] = require(script.Parent.constructor),
 	["@"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
-	["@s"] = if RunService:IsServer() then ServerStorage:WaitForChild("ServerPackages", waitForChildTimeout) else ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
+	["@s"] = if RunService:IsServer()
+		then ServerStorage:WaitForChild("ServerPackages", waitForChildTimeout)
+		else ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
 	["packages"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
-	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout):WaitForChild("Services", waitForChildTimeout),
+	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout)
+		:WaitForChild("Services", waitForChildTimeout),
 	["objects"] = knightRoot:WaitForChild("Objects", waitForChildTimeout),
 }
 
-local function waitForPath(root: Instance, path: string, timeout: number): Instance
+local function waitForPath(root: Instance, path: string): Instance
 	local current = root
 	for segment in path:gmatch("[^/]+") do
-		current = current:WaitForChild(segment, timeout)
+		current = current:WaitForChild(segment, waitForChildTimeout)
 	end
 	return current
 end
@@ -84,51 +87,116 @@ local function export(module: any, exports: table?): any
 end
 
 return function(target: string | Instance, exports: table?): any
-	-- Default Roblox require() functionality
-	if typeof(target) == "Instance" then
-		assert(target:IsA("ModuleScript"), "Target must be a ModuleScript")
+	if target == "_defineAliases" then
+		assert(exports and typeof(exports) == "table", "_defineAliases requires a table of aliases")
 
-		return require(target)
+		for alias, source in pairs(exports) do
+			assert(typeof(alias) == "string" and alias ~= "", "Alias must be a non-empty string")
+			aliases[alias] = source
+		end
+
+		return
 	end
 
-	assert(typeof(target) == "string", "Target must be a string")
-	assert(target ~= "", "Target cannot be an empty string")
+	-- Standard Roblox require()
+	if typeof(target) == "Instance" then
+		if not target:IsA("ModuleScript") then
+			error(`Target Instance '{target:GetFullName()}' is not a ModuleScript`)
+		end
+
+		local ok, result = pcall(require, target)
+		if not ok then
+			error(`Failed to require ModuleScript at Instance '{target:GetFullName()}': {result}`)
+		end
+
+		return export(result, exports)
+	end
+
+	if typeof(target) ~= "string" or target == "" then
+		error("Target must be a non-empty string or ModuleScript")
+	end
 
 	for alias, source in pairs(aliases) do
-		local aliasLower = alias:lower()
-		if target:lower():find(aliasLower .. "/") then
-			local path = target:gsub("^" .. aliasLower .. "/", "")
-			assert(source, alias .. " alias not found")
+		local aliasLength = #alias
+		if target:sub(1, aliasLength + 1):lower() == (alias:lower() .. "/") then
+			local path = target:sub(aliasLength + 2)
+			if not source then
+				error(`Alias '{alias}' is not defined`)
+			end
 
+			local result
 			if typeof(source) == "Instance" then
 				if source:IsA("Folder") then
-					return export(require(waitForPath(source, path, waitForChildTimeout)), exports)
+					local success, moduleOrErr = pcall(function()
+						return require(waitForPath(source, path))
+					end)
+					if not success then
+						error(`Failed to require module at path '{path}' under alias '{alias}': {moduleOrErr}`)
+					end
+					result = moduleOrErr
 				elseif source:IsA("ModuleScript") then
-					return export(require(source), exports)
+					local ok, val = pcall(require, source)
+					if not ok then
+						error(`Failed to require module for alias '{alias}': {val}`)
+					end
+					result = val
 				else
-					error(`Alias '{alias}' points to unsupported Instance type`)
+					error(`Alias '{alias}' points to unsupported instance type: {source.ClassName}`)
 				end
 			elseif typeof(source) == "table" then
 				local current = source
 				for segment in path:gmatch("[^/]+") do
-					current = current[segment]
-					assert(current, `Module '{segment}' not found in alias '{alias}'`)
+					if typeof(current) == "table" then
+						current = current[segment]
+					elseif typeof(current) == "Instance" then
+						current = current:FindFirstChild(segment)
+					else
+						error(
+							`Cannot index segment '{segment}' in alias '{alias}': expected table or Instance, got {typeof(
+								current
+							)}`
+						)
+					end
+
+					if not current then
+						error(`Module segment '{segment}' not found in alias '{alias}'`)
+					end
 				end
 
 				if typeof(current) == "Instance" and current:IsA("ModuleScript") then
-					return export(require(current), exports)
+					local ok, result = pcall(require, current)
+					if not ok then
+						error(`Failed to require ModuleScript at alias '{alias}': {result}`)
+					end
+					return export(result, exports)
+				elseif typeof(current) == "table" then
+					return export(current, exports)
+				else
+					error(
+						`Resolved object in alias '{alias}' is neither a ModuleScript nor a table (got {typeof(current)})`
+					)
 				end
-
-				return export(current, exports)
 			else
-				error(`Alias '{alias}' must be an Instance or table`)
+				error(`Alias '{alias}' must be an Instance or table, got: {typeof(source)}`)
 			end
+
+			return export(result, exports)
 		end
 	end
 
-	-- Fallback to `Knight/Services/` / `Knight/Controllers/` if not found in aliases
-	local contianer = knightRoot:FindFirstChild("Services") or knightRoot:FindFirstChild("Controllers")
-	assert(contianer, "Knight Services or Controllers folder not found")
+	-- Fallback to Services or Controllers
+	local fallbackContainer = knightRoot:FindFirstChild("Services") or knightRoot:FindFirstChild("Controllers")
+	if not fallbackContainer then
+		error("No 'Services' or 'Controllers' folder found in Knight root for fallback resolution")
+	end
 
-	return export(require(contianer:WaitForChild(target, waitForChildTimeout)), exports)
+	local success, finalModule = pcall(function()
+		return require(fallbackContainer:WaitForChild(target, waitForChildTimeout))
+	end)
+
+	if not success then
+		error(`Failed to fallback-require '{target}' from Knight root: {finalModule}`)
+	end
+
+	return export(finalModule, exports)
 end

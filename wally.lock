@@ -3,11 +3,31 @@
 registry = "test"
 
 [[package]]
+name = "csqrl/sift"
+version = "0.0.11"
+dependencies = []
+
+[[package]]
+name = "dekkonot/md5"
+version = "1.0.0"
+dependencies = []
+
+[[package]]
 name = "devsparkle/maid"
 version = "2.1.0"
 dependencies = []
 
 [[package]]
-name = "rampage/knight"
-version = "1.0.2-prod"
-dependencies = [["maid", "devsparkle/maid@2.1.0"]]
+name = "elttob/fusion"
+version = "0.2.0"
+dependencies = []
+
+[[package]]
+name = "evaera/promise"
+version = "4.0.0"
+dependencies = []
+
+[[package]]
+name = "vq9o/knight"
+version = "1.0.6"
+dependencies = [["fusion", "elttob/fusion@0.2.0"], ["maid", "devsparkle/maid@2.1.0"], ["md5", "dekkonot/md5@1.0.0"], ["promise", "evaera/promise@4.0.0"], ["sift", "csqrl/sift@0.0.11"]]

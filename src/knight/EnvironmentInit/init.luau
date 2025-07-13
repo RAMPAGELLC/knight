@@ -32,6 +32,7 @@ local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
 
 local KnightPackage = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("knight")
+local Remotes = ReplicatedStorage:WaitForChild("Knight", 30):WaitForChild("Services", 30):WaitForChild("Remotes", 30)
 local Types = require(script:WaitForChild("Types"))
 
 local KnightCore = require(KnightPackage)
@@ -79,7 +80,8 @@ function Knight:Shutdown(DoNotReport: boolean?, errorLog: string?)
 
 		for i = Config.SHUTDOWN_KICK_DELAY, 1, -1 do
 			self.ErrorPageState.text:set(
-				DoNotReport and DefaultConfig.ERR_EN_NO_REF_ID:format(tostring(i)) or string.format(DefaultConfig.ERROR_EN_WITH_REF_ID, tostring(i), ReportID)
+				DoNotReport and DefaultConfig.ERR_EN_NO_REF_ID:format(tostring(i))
+					or string.format(DefaultConfig.ERROR_EN_WITH_REF_ID, tostring(i), ReportID)
 			)
 			task.wait(1)
 		end
@@ -98,7 +100,13 @@ function Knight:Shutdown(DoNotReport: boolean?, errorLog: string?)
 
 		if not DoNotReport then
 			pcall(function()
-				error(("Error ID: %s - Error: %s\nTraceback: %s"):format(ReportID, errorLog or "Unknown error occured!", debug.traceback()))
+				error(
+					("Error ID: %s - Error: %s\nTraceback: %s"):format(
+						ReportID,
+						errorLog or "Unknown error occured!",
+						debug.traceback()
+					)
+				)
 			end)
 		end
 	end
@@ -119,7 +127,10 @@ function Knight:GetService(ServiceName: string): any
 
 	if isSharedService then
 		if not Service or (Service ~= nil and Modules.Shared[ServiceName] == nil) then
-			Log(Log.LEVEL.WARN, string.format("[Knight:%s:Info] %s is not a valid shared service.", self.RunType, ServiceName))
+			Log(
+				Log.LEVEL.WARN,
+				string.format("[Knight:%s:Info] %s is not a valid shared service.", self.RunType, ServiceName)
+			)
 
 			return nil
 		end
@@ -172,19 +183,56 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	end
 
 	self.RunType = ("Shared:%s"):format(runType) or runType
-	self.Shared = not isShared and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("KnightInit")).new(true, KnightInternal) or {}
+	self.Shared = not isShared
+			and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("KnightInit")).new(true, KnightInternal)
+		or {}
 	self.Inited = false
 	self.Enum = require(ReplicatedStorage:WaitForChild("KNIGHT_ENUM"))
 	self.Internal = KnightInternal
 	self.KnightCache = { UpdateEvent = nil }
 
-	if Config.ENABLE_KNIGHTDOTREMOTES then
-		self.Remotes = ReplicatedStorage:WaitForChild("Knight"):WaitForChild("Services"):WaitForChild("Remotes")
+	if
+		Config.ENABLE_KNIGHTDOTREMOTES ~= nil and Config.ENABLE_KNIGHTDOTREMOTES
+		or Config.ENABLE_KNIGHTDOTREMOTES == nil
+	then
+		if Remotes ~= nil and Remotes:IsA("ModuleScript") then
+			local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
 
-		if self.Remotes ~= nil and self.Remotes:IsA("ModuleScript") then
-			self.Remotes = require(self.Remotes)
+			task.spawn(function()
+				moduleResult = table.pack(pcall(require, Remotes))
+			end)
+
+			if moduleResult == nil then
+				while moduleResult == nil and task.wait() do
+					if (tick() - moduleStart) >= 20 and not moduleStartupError then
+						Log(Log.LEVEL.INFO, `Knight Remotes is taking too long to startup.`)
+						moduleStartupError = true
+					end
+				end
+			end
+
+			if Config.LOG_STARTUP_INFO or moduleStartupError then
+				Log(
+					Log.LEVEL.INFO,
+					`Knight Remotes has loaded after {tostring(math.floor(tick() - moduleStart))} second(s).`
+				)
+			end
+
+			local success, mod = table.unpack(moduleResult)
+
+			if success and mod then
+				self.Remotes = mod
+			else
+				Log(Log.LEVEL.WARN, `Failed to import Knight remotes due to: {mod}.`)
+			end
 		else
-			Log(Log.LEVEL.WARN, "Knight.Remotes link will not work as the framework failed to detect KnightRemotes script.")
+			warn(
+				"[Knight] KnightRemotes module not found in ReplicatedStorage.Knight.Services.Remotes, creating a new instance."
+			)
+			Log(
+				Log.LEVEL.WARN,
+				"Knight.Remotes link will not work as the framework failed to detect KnightRemotes script."
+			)
 		end
 	end
 
@@ -218,7 +266,10 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			end
 
 			if Config.LOG_STARTUP_INFO or moduleStartupError then
-				Log(Log.LEVEL.INFO, `KnightLibrary.{library.Name}.luau has loaded after {tostring(math.floor(tick() - moduleStart))} second(s).`)
+				Log(
+					Log.LEVEL.INFO,
+					`KnightLibrary.{library.Name}.luau has loaded after {tostring(math.floor(tick() - moduleStart))} second(s).`
+				)
 			end
 
 			local success, mod = table.unpack(moduleResult)
@@ -229,12 +280,18 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			end
 
 			if typeof(mod) == "string" then
-				Log(Log.LEVEL.WARN, `Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest is a 'string', expected 'table'.`)
+				Log(
+					Log.LEVEL.WARN,
+					`Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest is a 'string', expected 'table'.`
+				)
 				continue
 			end
 
 			if manifestAPI.Validate(mod) == nil then
-				Log(Log.LEVEL.WARN, `Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest error.`)
+				Log(
+					Log.LEVEL.WARN,
+					`Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest error.`
+				)
 				continue
 			end
 
@@ -352,7 +409,10 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				Modules[moduleName].internalMaid:DoCleaning()
 			end
 
-			Log(Log.LEVEL.WARN, string.format("%s.luau knight service has been stopped via 'Service.Unload()'.", moduleName))
+			Log(
+				Log.LEVEL.WARN,
+				string.format("%s.luau knight service has been stopped via 'Service.Unload()'.", moduleName)
+			)
 			Modules[moduleName] = nil
 		end
 
@@ -378,6 +438,11 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				__index = function(_, serviceName: string)
 					return setmetatable({}, {
 						__index = function(_, eventName: string)
+							assert(
+								self.Remotes,
+								"KnightRemotes must be enabled to use the Knight Exposed-server functions API."
+							)
+
 							if self.Remotes:IsRegistered("KCE:" .. serviceName .. ":" .. eventName) then
 								return function(...)
 									return self.Remotes:Fire("KCE:" .. serviceName .. ":" .. eventName, ...)
@@ -385,7 +450,10 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 							else
 								Log(
 									Log.LEVEL.WARN,
-									("RemoteFunction '%s' is not an valid exposed function of service '%s' is not registered."):format(eventName, serviceName)
+									("RemoteFunction '%s' is not an valid exposed function of service '%s' is not registered."):format(
+										eventName,
+										serviceName
+									)
 								)
 								return nil
 							end
@@ -401,8 +469,13 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 					continue
 				end
 
+				assert(self.Remotes, "KnightRemotes must be enabled to use the Knight Exposed-server functions API.")
+
 				self.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", function(...)
-					assert(Modules[moduleName].Client[EventName] ~= nil, `Exposed API '{EventName}' is no longer a valid function.`)
+					assert(
+						Modules[moduleName].Client[EventName] ~= nil,
+						`Exposed API '{EventName}' is no longer a valid function.`
+					)
 					return Modules[moduleName].Client[EventName](Modules[moduleName], ...)
 				end)
 			end
@@ -417,7 +490,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			continue
 		end
 
-		local initMethod = Modules[moduleName].Init or Modules[moduleName].init;
+		local initMethod = Modules[moduleName].Init or Modules[moduleName].init
 
 		if initMethod and typeof(initMethod) == "function" and Modules[moduleName].CanInit then
 			local start, ok, state, errorReported = tick(), nil, nil, false
@@ -435,13 +508,19 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				end
 
 				if errorReported or Config.DO_NOT_WAIT then
-					Log(Log.LEVEL.INFO, `{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`)
+					Log(
+						Log.LEVEL.INFO,
+						`{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`
+					)
 					break
 				end
 			end
 
 			if Config.LOG_STARTUP_INFO or errorReported then
-				Log(Log.LEVEL.INFO, `{moduleName}.luau Init() function completed after {tostring(tick() - start)} second(s).`)
+				Log(
+					Log.LEVEL.INFO,
+					`{moduleName}.luau Init() function completed after {tostring(tick() - start)} second(s).`
+				)
 			end
 
 			if not ok and state == nil then
@@ -460,12 +539,19 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			end
 		end
 
-		if Modules[moduleName].Update ~= nil and typeof(Modules[moduleName].Update) == "function" and Modules[moduleName].CanUpdate then
+		if
+			Modules[moduleName].Update ~= nil
+			and typeof(Modules[moduleName].Update) == "function"
+			and Modules[moduleName].CanUpdate
+		then
 			Modules[moduleName].internalMaid:GiveTask(self.KnightCache.UpdateEvent:Connect(Modules[moduleName].Update))
 		end
 
 		if Config.LOG_STARTUP_INFO then
-			Log(Log.LEVEL.INFO, `{moduleName}.luau took {tostring(math.floor(tick() - Modules[moduleName].moduleStart))} second(s) to load completely.`)
+			Log(
+				Log.LEVEL.INFO,
+				`{moduleName}.luau took {tostring(math.floor(tick() - Modules[moduleName].moduleStart))} second(s) to load completely.`
+			)
 		end
 	end
 
@@ -480,7 +566,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			continue
 		end
 
-		local startMethod = Modules[moduleName].Start or Modules[moduleName].start;
+		local startMethod = Modules[moduleName].Start or Modules[moduleName].start
 
 		if startMethod and typeof(startMethod) == "function" and Modules[moduleName].CanStart then
 			local start, ok, state, errorReported = tick(), nil, nil, false
@@ -498,13 +584,19 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				end
 
 				if errorReported or Config.DO_NOT_WAIT then
-					Log(Log.LEVEL.INFO, `{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`)
+					Log(
+						Log.LEVEL.INFO,
+						`{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`
+					)
 					break
 				end
 			end
 
 			if Config.LOG_STARTUP_INFO or errorReported then
-				Log(Log.LEVEL.WARN, `{moduleName}.luau Start completed after {tostring(math.floor(tick() - start))} second(s).`)
+				Log(
+					Log.LEVEL.WARN,
+					`{moduleName}.luau Start completed after {tostring(math.floor(tick() - start))} second(s).`
+				)
 			end
 
 			if not ok and state == nil then
