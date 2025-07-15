@@ -1,5 +1,6 @@
 <img align="left" src="./gh-assets/logo-dark-theme.svg#gh-dark-mode-only" alt="Knight"><img align="left" src="./gh-assets/logo-light-theme.svg#gh-light-mode-only" alt="Knight"><a href="https://knight.metatable.dev"><img align="right" src="./gh-assets/link-docs.svg" alt="Docs"></a><a href="https://github.com/RAMPAGELLC/knight/releases"><img align="right" src="./gh-assets/link-download.svg" alt="Download"></a><img src="./gh-assets/clearfloat.svg">
 <hr>
+
 Knight is a robust and modular Roblox game framework designed to help you organize your projects efficiently. It provides optional tools to enhance your workflow—but tools are **not required** to use Knight.
 
 ---
