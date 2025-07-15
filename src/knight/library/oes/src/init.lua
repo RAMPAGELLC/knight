@@ -1,6 +1,6 @@
 --[[
 
- Copyright (c) 2024 RAMPAGE Interactive. All rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.. All rights reserved.
  Copyright (c) 2024 Metatable Games. All rights reserved.
  
  Written by vq9o <business@vq9o.com>.
@@ -69,13 +69,13 @@ end
 
 function Server:on(SocketName: string, AllowDataReturn: boolean, OnTrigger: (...any) -> nil)
 	local Event = self:FindEvent(SocketName, AllowDataReturn)
-    Event.Parent = self.Events;
+	Event.Parent = self.Events
 	Event.Name = SocketName
 
 	if AllowDataReturn then
 		Event.OnServerInvoke = function(Player: Player, ...)
 			if not self.MiddlewareAuthentication(Player, SocketName) then
-                warn(("%s attempted to call a restricited socket '%s'."):format(Player.Name, SocketName))
+				warn(("%s attempted to call a restricited socket '%s'."):format(Player.Name, SocketName))
 				return nil
 			end
 
@@ -84,7 +84,7 @@ function Server:on(SocketName: string, AllowDataReturn: boolean, OnTrigger: (...
 	else
 		self.Maid:GiveTask(Event.OnServerEvent:Connect(function(Player: Player, ...)
 			if not self.MiddlewareAuthentication(Player, SocketName) then
-                warn(("%s attempted to call a restricited socket '%s'."):format(Player.Name, SocketName))
+				warn(("%s attempted to call a restricited socket '%s'."):format(Player.Name, SocketName))
 				return nil
 			end
 
@@ -95,18 +95,18 @@ function Server:on(SocketName: string, AllowDataReturn: boolean, OnTrigger: (...
 	self.Maid:GiveTask(Event)
 end
 
-function Server:emit(SocketName: string, Player: Player | boolean, ...): (...any)
+function Server:emit(SocketName: string, Player: Player | boolean, ...): ...any
 	local Event = self:FindEvent(SocketName, false)
 
 	if Event:IsA("RemoteFunction") then
 		if typeof(Player) == "boolean" then
-            warn(("Socket %s cannot return data with no player specified, you will keep getting NIL."):format(SocketName))
+			warn(("Socket %s cannot return data with no player specified, you will keep getting NIL."):format(SocketName))
 
-            for i,v in pairs(Players:GetPlayers()) do
-                Event:InvokeClient(v, ...)
-            end
+			for i, v in pairs(Players:GetPlayers()) do
+				Event:InvokeClient(v, ...)
+			end
 
-            return nil;
+			return nil
 		else
 			return Event:InvokeClient(Player, ...)
 		end
@@ -155,21 +155,21 @@ function Client:on(SocketName: string, OnTrigger: (...any) -> nil)
 	self.Maid:GiveTask(Event)
 end
 
-function Client:emit(SocketName: string, ...): (...any)
+function Client:emit(SocketName: string, ...): ...any
 	local Event = self.Events:FindFirstChild(SocketName)
 
 	if Event == nil then
 		warn("Socket " .. SocketName .. " does not exist.")
 		return nil
 	end
-	
+
 	if Event:IsA("RemoteFunction") then
 		return Event:InvokeServer(...)
 	end
-	
-	Event:FireServer(...);
-	
-	return nil;
+
+	Event:FireServer(...)
+
+	return nil
 end
 
 function Client:Destroy()
@@ -181,4 +181,4 @@ function Client:Disconnect()
 	return self:Destroy()
 end
 
-return RunService:IsServer() and Server or Client;
+return RunService:IsServer() and Server or Client

@@ -1,6 +1,6 @@
 --[[
 
- Copyright (c) 2024 RAMPAGE Interactive. All rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.. All rights reserved.
  Copyright (c) 2024 Metatable Games. All rights reserved.
  
  Written by crn_tl <development@vortexz.net> and vq9o <business@vq9o.com>
@@ -49,7 +49,7 @@ function ModerationModule:ConvertTimestamp(Timestamp: string)
 		h = 3600,
 		d = 86400,
 		w = 604800,
-		y = 31556926
+		y = 31556926,
 	}
 
 	local Number, Unit = Timestamp:match("(%d+)(%a)")
@@ -59,22 +59,22 @@ function ModerationModule:ConvertTimestamp(Timestamp: string)
 	end
 end
 
-function ModerationModule:PermbanPlayerAsync(player: Player | {number}, displayreason: string, modnotice: string, ApplyToUniverse: boolean) : boolean
+function ModerationModule:PermbanPlayerAsync(player: Player | { number }, displayreason: string, modnotice: string, ApplyToUniverse: boolean): boolean
 	if not (typeof(player) == "table") then
-		player = {player.UserId}
+		player = { player.UserId }
 	end
 
-	local BanConfig : BanConfigType = {
+	local BanConfig: BanConfigType = {
 		UserIds = player,
-		Duration = -1;
+		Duration = -1,
 		DisplayReason = displayreason,
 		PrivateReason = modnotice,
 		ExcludeAltAccounts = false,
-		ApplyToUniverse = ApplyToUniverse
+		ApplyToUniverse = ApplyToUniverse,
 	}
 
 	local success, errormessage = pcall(function()
-		return PlayerService:BanAsync(BanConfig);
+		return PlayerService:BanAsync(BanConfig)
 	end)
 
 	if not success then
@@ -86,26 +86,32 @@ function ModerationModule:PermbanPlayerAsync(player: Player | {number}, displayr
 	return true
 end
 
-function ModerationModule:TempbanPlayerAsync(player: Player | {number}, duration: string | number, displayreason: string, modnotice: string, ApplyToUniverse: boolean) : boolean
+function ModerationModule:TempbanPlayerAsync(
+	player: Player | { number },
+	duration: string | number,
+	displayreason: string,
+	modnotice: string,
+	ApplyToUniverse: boolean
+): boolean
 	if not (typeof(player) == "table") then
-		player = {player.UserId}
+		player = { player.UserId }
 	end
 
 	if typeof(duration) == "string" then
-		duration = ModerationModule:ConvertTimestamp(duration);
+		duration = ModerationModule:ConvertTimestamp(duration)
 	end
 
-	local BanConfig : BanConfigType = {
+	local BanConfig: BanConfigType = {
 		UserIds = player,
-		Duration = duration;
+		Duration = duration,
 		DisplayReason = displayreason,
 		PrivateReason = modnotice,
 		ExcludeAltAccounts = false,
-		ApplyToUniverse = ApplyToUniverse
+		ApplyToUniverse = ApplyToUniverse,
 	}
 
 	local success, errormessage = pcall(function()
-		return PlayerService:BanAsync(BanConfig);
+		return PlayerService:BanAsync(BanConfig)
 	end)
 
 	if not success then
@@ -117,14 +123,14 @@ function ModerationModule:TempbanPlayerAsync(player: Player | {number}, duration
 	return true
 end
 
-function ModerationModule:UnbanPlayerAsync(player: number | {number}, ApplyToUniverse: boolean) : boolean
+function ModerationModule:UnbanPlayerAsync(player: number | { number }, ApplyToUniverse: boolean): boolean
 	if not (typeof(player) == "table") then
-		player = {player};
+		player = { player }
 	end
 
-	local UnbanConfig  : UnbanConfigType = {
+	local UnbanConfig: UnbanConfigType = {
 		UserIds = player,
-		ApplyToUniverse = ApplyToUniverse
+		ApplyToUniverse = ApplyToUniverse,
 	}
 
 	local success, errormessage = pcall(function()
@@ -140,8 +146,8 @@ function ModerationModule:UnbanPlayerAsync(player: number | {number}, ApplyToUni
 	return true
 end
 
-function ModerationModule:PlayerModerationHistory(player: Player, amount: number) : boolean | {}
-	local Banhistory : {};
+function ModerationModule:PlayerModerationHistory(player: Player, amount: number): boolean | {}
+	local Banhistory: {}
 
 	local success, errormessage = pcall(function()
 		Banhistory = PlayerService:GetBanHistoryAsync(player.UserId)
@@ -150,17 +156,17 @@ function ModerationModule:PlayerModerationHistory(player: Player, amount: number
 			local SortedBanhistory = {}
 
 			for i = 1, amount do
-				SortedBanhistory[i] = Banhistory[i];
+				SortedBanhistory[i] = Banhistory[i]
 			end
 
-			Banhistory = SortedBanhistory;
+			Banhistory = SortedBanhistory
 		end
 
-		return Banhistory;
+		return Banhistory
 	end)
 
 	if not success then
-		warn("An error occured while trying to retrieve players moderation history. \n" .. errormessage);
+		warn("An error occured while trying to retrieve players moderation history. \n" .. errormessage)
 
 		return false
 	end

@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2025 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -52,8 +52,7 @@ local aliases = {
 		then ServerStorage:WaitForChild("ServerPackages", waitForChildTimeout)
 		else ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
 	["packages"] = ReplicatedStorage:WaitForChild("Packages", waitForChildTimeout),
-	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout)
-		:WaitForChild("Services", waitForChildTimeout),
+	["shared"] = ReplicatedStorage:WaitForChild("Knight", waitForChildTimeout):WaitForChild("Services", waitForChildTimeout),
 	["objects"] = knightRoot:WaitForChild("Objects", waitForChildTimeout),
 }
 
@@ -151,11 +150,7 @@ return function(target: string | Instance, exports: table?): any
 					elseif typeof(current) == "Instance" then
 						current = current:FindFirstChild(segment)
 					else
-						error(
-							`Cannot index segment '{segment}' in alias '{alias}': expected table or Instance, got {typeof(
-								current
-							)}`
-						)
+						error(`Cannot index segment '{segment}' in alias '{alias}': expected table or Instance, got {typeof(current)}`)
 					end
 
 					if not current then
@@ -172,9 +167,7 @@ return function(target: string | Instance, exports: table?): any
 				elseif typeof(current) == "table" then
 					return export(current, exports)
 				else
-					error(
-						`Resolved object in alias '{alias}' is neither a ModuleScript nor a table (got {typeof(current)})`
-					)
+					error(`Resolved object in alias '{alias}' is neither a ModuleScript nor a table (got {typeof(current)})`)
 				end
 			else
 				error(`Alias '{alias}' must be an Instance or table, got: {typeof(source)}`)

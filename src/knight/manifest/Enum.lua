@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -17,9 +17,9 @@
 ]]
 
 return {
-    Runtime = {
-        Server = "Server";
-        Client = "Client";
-        Shared = "Shared";
-    }
+	Runtime = {
+		Server = "Server",
+		Client = "Client",
+		Shared = "Shared",
+	},
 }

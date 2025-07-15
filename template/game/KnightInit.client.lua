@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
  Knight Package Manager (KPM): https://github.com/RAMPAGELLC/KnightPackageManager
@@ -16,4 +16,10 @@
  Documentation: https://knight.metatable.dev
 ]]
 
-require(game:GetService("ReplicatedStorage").Packages.knight):Init()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Packages = ReplicatedStorage:WaitForChild("Packages")
+
+local core = require(Packages:WaitForChild("knight"))
+
+core:DefineImportAliases({})
+core:Init()

@@ -8,15 +8,15 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2025 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 ]]
 
 local RunService = game:GetService("RunService")
 
-local require = require(script.Parent.Parent.require)
 local Log = require("core/class/Log")
+local require = require(script.Parent.Parent.require)
 
 local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
@@ -26,12 +26,7 @@ ErrorHandler.OnError = Instance.new("BindableEvent")
 
 function ErrorHandler:Handle(Knight, child, err)
 	local trace = debug.traceback(err, 2)
-	local message = string.format(
-		"%sAn error occurred in %s:\n---- Stack trace ----\n%s",
-		(if Knight.IsShared then " [Shared] " else ""),
-		child.Name,
-		trace
-	)
+	local message = string.format("%sAn error occurred in %s:\n---- Stack trace ----\n%s", (if Knight.IsShared then " [Shared] " else ""), child.Name, trace)
 
 	Log(Log.LEVEL.ERROR, message)
 
@@ -41,7 +36,7 @@ function ErrorHandler:Handle(Knight, child, err)
 		child = child,
 		trace = trace,
 		message = message,
-        timestamp = os.time()
+		timestamp = os.time(),
 	})
 end
 

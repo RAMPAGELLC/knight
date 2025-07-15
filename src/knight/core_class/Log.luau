@@ -8,13 +8,13 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2025 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 ]]
 
-local require = require(script.Parent.Parent.require)
 local Sift = require("core/sift")
+local require = require(script.Parent.Parent.require)
 
 local RunService = game:GetService("RunService")
 local LogHelper = {}

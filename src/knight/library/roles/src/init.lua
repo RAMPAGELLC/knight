@@ -1,4 +1,4 @@
--- Copyright (c) 2024 RAMPAGE Interactive
+-- (©) Copyright 2025 Meta Games LLC, all rights reserved.
 -- Written by vq9o
 
 -- License: MIT
@@ -8,12 +8,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 if not ReplicatedStorage:FindFirstChild("Constants") then
 	warn("Failed to load library 'roles', package requires missing external config.")
-	return {};
+	return {}
 end
 
 if not ReplicatedStorage:FindFirstChild("Constants"):FindFirstChild("Config") then
 	warn("Failed to load library 'roles', package requires missing external config.")
-	return {};
+	return {}
 end
 
 local Config = require(ReplicatedStorage.Constants.Config)
@@ -26,7 +26,7 @@ export type Role = {
 	Teams: { Team },
 	Groups: { { number } },
 	Roles: { RoleName },
-	DiscordRoles: { string }
+	DiscordRoles: { string },
 }
 
 local Service = {}
@@ -42,7 +42,14 @@ function Service:GetRoleConfigByName(RoleName: RoleName): Role | nil
 end
 
 function Service:HasDiscordRole(Player: Player, RoleId: string | number): boolean
-	return table.find(_G.PlayerData ~= nil and _G.PlayerData[Player.Name] ~= nil and _G.PlayerData[Player.Name].DiscordRoles ~= nil and _G.PlayerData[Player.Name].DiscordRoles or {}, tostring(RoleId))
+	return table.find(
+		_G.PlayerData ~= nil
+				and _G.PlayerData[Player.Name] ~= nil
+				and _G.PlayerData[Player.Name].DiscordRoles ~= nil
+				and _G.PlayerData[Player.Name].DiscordRoles
+			or {},
+		tostring(RoleId)
+	)
 end
 
 function Service:HasRole(Player: Player, RoleName: RoleName): boolean
@@ -145,15 +152,15 @@ function Service:HasRole(Player: Player, RoleName: RoleName): boolean
 	end
 
 	if requireAll then
-		local passCount: number = 0;
+		local passCount: number = 0
 
 		for _, bool: boolean in pairs(hasPerm) do
 			if bool then
-				passCount += 1;
+				passCount += 1
 			end
 		end
 
-		return passCount >= #hasPerm;
+		return passCount >= #hasPerm
 	end
 
 	return false

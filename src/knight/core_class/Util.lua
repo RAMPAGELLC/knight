@@ -10,7 +10,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
  
@@ -18,11 +18,10 @@
  Documentation: https://knight.metatable.dev
 ]]
 
-
-local CollectionService = game:GetService("CollectionService")
 local Chat = game:GetService("Chat")
+local CollectionService = game:GetService("CollectionService")
 
-local VISIBLE_HASTAGS = true;
+local VISIBLE_HASTAGS = true
 local Util = {}
 
 function Util.DeepCopy(orig: any)
@@ -43,8 +42,8 @@ function Util.DeepCopy(orig: any)
 end
 
 function Util.SyncTable(data: table, template: table)
-    assert(typeof(data) == "table")
-    assert(typeof(template) == "table")
+	assert(typeof(data) == "table")
+	assert(typeof(template) == "table")
 
 	for k, v in pairs(template) do
 		if type(v) == "table" then
@@ -64,13 +63,13 @@ function Util.SyncTable(data: table, template: table)
 end
 
 function Util.FilterText(from: Player, text: string, VISIBLE_HASTAGS_OVERRIDE: boolean | nil)
-    assert(typeof(from) == "Instance" and from:IsA("Player"))
-    assert(typeof(text) == "string")
-    assert(VISIBLE_HASTAGS_OVERRIDE == nil or VISIBLE_HASTAGS_OVERRIDE ~= nil and typeof(VISIBLE_HASTAGS_OVERRIDE) == "boolean")
+	assert(typeof(from) == "Instance" and from:IsA("Player"))
+	assert(typeof(text) == "string")
+	assert(VISIBLE_HASTAGS_OVERRIDE == nil or VISIBLE_HASTAGS_OVERRIDE ~= nil and typeof(VISIBLE_HASTAGS_OVERRIDE) == "boolean")
 
-    if VISIBLE_HASTAGS_OVERRIDE == nil then
-        VISIBLE_HASTAGS_OVERRIDE = VISIBLE_HASTAGS;
-    end
+	if VISIBLE_HASTAGS_OVERRIDE == nil then
+		VISIBLE_HASTAGS_OVERRIDE = VISIBLE_HASTAGS
+	end
 
 	local UIF = Chat:FilterStringForBroadcast(text, from)
 
@@ -82,7 +81,7 @@ function Util.FilterText(from: Player, text: string, VISIBLE_HASTAGS_OVERRIDE: b
 end
 
 function Util.studsToMiles(studs: number)
-    assert(typeof(studs) == "number")
+	assert(typeof(studs) == "number")
 
 	-- Conversion factor from studs to miles
 	local conversionFactor = 0.00017391
@@ -94,7 +93,7 @@ function Util.studsToMiles(studs: number)
 end
 
 function Util.GetTableLength(tbl: { [string | number]: any }): number
-    assert(typeof(tbl) == "table")
+	assert(typeof(tbl) == "table")
 
 	local length = 0
 
@@ -106,7 +105,7 @@ function Util.GetTableLength(tbl: { [string | number]: any }): number
 end
 
 function Util.showCharacter(player: Player)
-    assert(typeof(player) == "Instance" and player:IsA("Player"))
+	assert(typeof(player) == "Instance" and player:IsA("Player"))
 
 	local character = player.Character or player.CharacterAdded:Wait()
 
@@ -138,7 +137,7 @@ function Util.showCharacter(player: Player)
 end
 
 function Util.hideCharacter(player: Player)
-    assert(typeof(player) == "Instance" and player:IsA("Player"))
+	assert(typeof(player) == "Instance" and player:IsA("Player"))
 
 	local character = player.Character or player.CharacterAdded:Wait()
 
@@ -166,7 +165,7 @@ function Util.hideCharacter(player: Player)
 end
 
 function Util.getNamedChildren(parent: Instance)
-    assert(typeof(parent) == "Instance")
+	assert(typeof(parent) == "Instance")
 
 	local children = {}
 
@@ -178,8 +177,8 @@ function Util.getNamedChildren(parent: Instance)
 end
 
 function Util.InstanceTagged(tagName: string, callback: (Instance: Instance) -> nil)
-    assert(typeof(tagName) == "string")
-    assert(typeof(callback) == "function")
+	assert(typeof(tagName) == "string")
+	assert(typeof(callback) == "function")
 
 	CollectionService:GetInstanceAddedSignal(tagName):Connect(function(taggedInstance)
 		callback(taggedInstance)
@@ -196,13 +195,13 @@ end
 	source: https://devforum.roblox.com/t/conversion-of-roblox-and-real-world-units/133327/4
 ]]
 function Util.toKg(mass: number)
-    assert(typeof(mass) == "number")
+	assert(typeof(mass) == "number")
 
 	return mass / 8
 end
 
 function Util.getAssemblyMass(assembly: Model)
-    assert(typeof(assembly) == "Instance" and assembly:IsA("Model"))
+	assert(typeof(assembly) == "Instance" and assembly:IsA("Model"))
 
 	local sum = 0
 
@@ -216,9 +215,9 @@ function Util.getAssemblyMass(assembly: Model)
 end
 
 function Util.fmtInt(number: number)
-    assert(typeof(number) == "number")
+	assert(typeof(number) == "number")
 
-	local i, j, minus, int, fraction = tostring(number):find('([-]?)(%d+)([.]?%d*)')
+	local i, j, minus, int, fraction = tostring(number):find("([-]?)(%d+)([.]?%d*)")
 
 	-- reverse the int-string and append a comma to all blocks of 3 digits
 	int = int:reverse():gsub("(%d%d%d)", "%1,")
@@ -229,31 +228,31 @@ function Util.fmtInt(number: number)
 end
 
 function Util.toKilometerPerSec(velocity: number)
-    assert(typeof(velocity) == "number")
+	assert(typeof(velocity) == "number")
 
 	return velocity * 1.09728
 end
 
 function Util.toMeterPerSec(velocity: number)
-    assert(typeof(velocity) == "number")
+	assert(typeof(velocity) == "number")
 
 	return Util.toKilometerPerSec(velocity) / 3.6
 end
 
 function Util.toMilesPerHour(velocity: number)
-    assert(typeof(velocity) == "number")
+	assert(typeof(velocity) == "number")
 
 	return (velocity * 3600) * 0.0001739839
 end
 
 function Util.GetPlayerFromShort(shortName: string)
-    assert(typeof(shortName) == "string")
+	assert(typeof(shortName) == "string")
 
-	shortName = string.lower(shortName);
+	shortName = string.lower(shortName)
 
-	for _,Player in pairs(game.Players:GetPlayers()) do
+	for _, Player in pairs(game.Players:GetPlayers()) do
 		local playerName = string.lower(Player.Name)
-		if string.match(playerName, "^"..shortName) then
+		if string.match(playerName, "^" .. shortName) then
 			return Player
 		end
 	end

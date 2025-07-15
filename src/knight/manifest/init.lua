@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -21,7 +21,7 @@ local manifest = {}
 manifest.Enum = require(script:WaitForChild("Enum"))
 
 manifest.Validate = function(...)
-    return require(script:WaitForChild("Validate"))(...)
+	return require(script:WaitForChild("Validate"))(...)
 end
 
 return manifest

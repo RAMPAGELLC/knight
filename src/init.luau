@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2025 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -19,8 +19,6 @@
  Links:
  Repository: https://github.com/RAMPAGELLC/knight
  Documentation: https://knight.metatable.dev
-]]  
+]]
 
-return require(
-    script:WaitForChild("src"):WaitForChild("knight")
-)
+return require(script:WaitForChild("src"):WaitForChild("knight"))

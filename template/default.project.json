@@ -20,13 +20,16 @@
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "$ignoreUnknownInstances": true,
-      "$path": "game/ServerScriptService"
+      "$path": "game/ServerScriptService",
+      "KnightInit": {
+        "$path": "KnightInit.server.lua"
+      }
     },
     "ServerStorage": {
       "$className": "ServerStorage",
       "$ignoreUnknownInstances": true,
       "$path": "game/ServerStorage",
-      
+
       "Knight": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
@@ -43,6 +46,9 @@
           "$className": "Folder",
           "$ignoreUnknownInstances": true,
           "$path": "client"
+        },
+        "KnightInit": {
+          "$path": "KnightInit.client.lua"
         }
       },
       "$ignoreUnknownInstances": true

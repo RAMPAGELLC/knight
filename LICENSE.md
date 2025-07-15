@@ -1,6 +1,7 @@
 # MIT License
+
 ```
-Copyright (c) 2024 RAMPAGE Interactive
+(©) Copyright 2025 Meta Games LLC, all rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@ SOFTWARE.
 # Additional licenses
 
 ## gh-assets for links
+
 ```
 MIT License
 

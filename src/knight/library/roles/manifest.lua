@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -19,7 +19,7 @@
 local manifest = require(script.Parent.Parent.Parent:WaitForChild("manifest", 90))
 
 return {
-    library_name = script.Parent.Name;
-    runtime = manifest.Enum.Runtime.Shared;
-    src = script.Parent:WaitForChild("src");
+	library_name = script.Parent.Name,
+	runtime = manifest.Enum.Runtime.Shared,
+	src = script.Parent:WaitForChild("src"),
 }

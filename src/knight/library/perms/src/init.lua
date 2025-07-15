@@ -1,4 +1,4 @@
--- Copyright (c) 2024 RAMPAGE Interactive
+-- (©) Copyright 2025 Meta Games LLC, all rights reserved.
 -- Written by vq9o
 
 -- License: MIT
@@ -40,7 +40,7 @@ function Parser:Parse(Player: Player, Permissions: { PermissionTypeString }, Req
 	end
 
 	local PermissionsPassed: number = 0
-	local ParsedPermissions: ParsedPermissions = parsePermissions(Permissions);
+	local ParsedPermissions: ParsedPermissions = parsePermissions(Permissions)
 
 	for _, perm in ipairs(ParsedPermissions) do
 		if PermissionsPassed > 0 and not RequireAll then

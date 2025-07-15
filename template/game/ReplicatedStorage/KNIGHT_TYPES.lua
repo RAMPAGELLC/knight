@@ -8,7 +8,7 @@
                 __/ |          
                |___/    
  
- (©) Copyright 2024 RAMPAGE Interactive, all rights reserved.
+ (©) Copyright 2025 Meta Games LLC, all rights reserved.
  Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
@@ -79,19 +79,19 @@ export type KnightClass = KnightRuntimeBase & {
 
 	GetMemoryUsageMB: () -> number,
 	GetMemoryUsageKB: () -> number,
-	
+
 	Unload: () -> void,
 
 	Server: {
-		[string]: (...any) -> any
+		[string]: (...any) -> any,
 	},
 
 	Client: {
-		[string]: (...any) -> any
+		[string]: (...any) -> any,
 	},
 
 	src: ModuleScript?,
-	
+
 	ServiceName: string?,
 	ServiceData: {
 		Author: string?,
