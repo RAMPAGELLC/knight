@@ -13,8 +13,8 @@
  License: MIT
 ]]
 
-local Sift = require("core/sift")
 local require = require(script.Parent.Parent.require)
+local Sift = require("core/sift")
 
 local RunService = game:GetService("RunService")
 local LogHelper = {}
