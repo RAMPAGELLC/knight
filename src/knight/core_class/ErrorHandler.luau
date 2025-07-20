@@ -15,8 +15,8 @@
 
 local RunService = game:GetService("RunService")
 
-local Log = require("core/class/Log")
 local require = require(script.Parent.Parent.require)
+local Log = require("core/class/Log")
 
 local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
