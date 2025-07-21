@@ -181,7 +181,7 @@ function FrameworkPackager:Package(Knight, Modules, tab, folder)
 						"[Knight:%s:Warning] A module with the name '%s' already exists in the environment. This may cause unexpected behavior and should be resolved.\nModule: %s\nPlease ensure each module has a unique ServiceName or use a different name for your module.",
 						runType,
 						child.Name,
-						mod
+						child.Name
 					)
 				)
 			end
