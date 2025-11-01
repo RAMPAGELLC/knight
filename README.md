@@ -73,35 +73,6 @@ kpm -h
 
 ---
 
-### ✅ Knight Script Profiler (KSP)
-
-Live script debugging for Knight framework services.
-
--   [Roblox Asset](https://create.roblox.com/store/asset/16837740534/Knight-Live-Script-Profiler)
--   [GitHub](https://github.com/RAMPAGELLC/KnightProfiler)
-
----
-
-## 🧾 Deprecated Tools
-
-### ❌ RAMPAGE CLI (RCLI)
-
-Previously required for installing KPM modules.
-
--   [Roblox Asset](https://create.roblox.com/marketplace/asset/7232500201/RAMPAGE-CLI)
-
-### ❌ Knight Services Manager (KSM)
-
-Basic GUI for managing Knight services (early prototype).
-
--   [Roblox Asset](https://create.roblox.com/marketplace/asset/13168343690/Knight-Services-Manager)
-
-### ❌ Knight Package Manager (KPM v1)
-
--   [GitHub](https://github.com/RAMPAGELLC/KnightPackageManager)
-
----
-
 ## 🤝 Contribute
 We welcome contributions from everyone!
 -   [Contribute to Documentation](https://knight.metatable.dev/contribution/documentation)
