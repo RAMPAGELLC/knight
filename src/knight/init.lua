@@ -38,19 +38,14 @@ function KnightCore:PrintVersion()
 	return Log(Log.LEVEL.INFO, KnightCore.Version)
 end
 
-function KnightCore:GetShared()
-	warn(
-		string.format(
-			"[Knight:%s:Error] Knight.Core:GetShared() is deprecated, please use Knight.Core:GetStorage(IsShared: boolean | nil).",
-			KnightCore.runType
-		)
-	)
-	return KnightCore:GetStorage(true)
-end
-
-function KnightCore:GetStorage(IsShared: boolean | nil)
+function KnightCore:GetEnvironmentInit(IsShared: boolean | nil)
 	if IsShared == nil then
 		IsShared = false
+	end
+
+	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("EnvironmentInit") then
+		local EnvironmentInit = script.EnvironmentInit:Clone()
+		EnvironmentInit.Parent = ReplicatedStorage:WaitForChild("Knight")
 	end
 
 	local context = RunService:IsServer() and ServerStorage:WaitForChild("Knight") or Players.LocalPlayer.PlayerScripts:WaitForChild("Knight")
@@ -59,41 +54,12 @@ function KnightCore:GetStorage(IsShared: boolean | nil)
 		context = ReplicatedStorage:WaitForChild("Knight")
 	end
 
-	if not context:FindFirstChild("KnightInit") then
+	if not context:FindFirstChild("EnvironmentInit") then
 		local EnvironmentInit = script.EnvironmentInit:Clone()
-		EnvironmentInit.Name = `KnightInit`
 		EnvironmentInit.Parent = context
 	end
 
-	return require(context:WaitForChild("KnightInit"))
-end
-
-function KnightCore:Init()
-	if not ReplicatedStorage:WaitForChild("Knight"):FindFirstChild("KnightInit") then
-		local EnvironmentInit = script.EnvironmentInit:Clone()
-		EnvironmentInit.Name = `KnightInit`
-		EnvironmentInit.Parent = ReplicatedStorage:WaitForChild("Knight")
-	end
-
-	local Storage = KnightCore:GetStorage()
-	local RuntypeServices = Storage.new(false, KnightCore)
-	local Shared = RuntypeServices.Shared
-
-	if KnightCore.config.GLOBAL_API_ENABLED then
-		_G.Knight = {}
-		_G.Knight.API = RuntypeServices
-		_G.Knight.API.Shared = Shared
-		_G.Knight.Internal = KnightCore
-	end
-
-	return KnightCore, _G.Knight ~= nil and _G.Knight.API or RuntypeServices
-end
-
-KnightCore.Core = {}
-
-KnightCore.Core.Init = function(...)
-	Log(Log.LEVEL.WARN, "KnightCore.Core has been deprecated in v1.0.5, please use KnightCore:Init() instead.")
-	return KnightCore:Init(...)
+	return (context:WaitForChild("EnvironmentInit"))
 end
 
 return KnightCore

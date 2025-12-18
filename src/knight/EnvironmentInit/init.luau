@@ -118,15 +118,17 @@ function Knight:GetService(ServiceName: string): any
 
 	local Service = container:FindFirstChild(ServiceName, true)
 
+	warn(Modules, ServiceName)
+
 	if isSharedService then
 		if not Service or (Service ~= nil and Modules.Shared[ServiceName] == nil) then
-			Log(Log.LEVEL.WARN, string.format("[Knight:%s:Info] %s is not a valid shared service.", self.RunType, ServiceName))
+			Log(Log.LEVEL.WARN, string.format("[Knight:%s:Info] %s is not a valid shared service.", self.RunType or "Unknown", ServiceName))
 
 			return nil
 		end
 	else
 		if not Service or (Service ~= nil and Modules[ServiceName] == nil) then
-			Log(Log.LEVEL.WARN, string.format("[Knight:%s:Info] %s is not a valid service.", self.RunType, ServiceName))
+			Log(Log.LEVEL.WARN, string.format("[Knight:%s:Info] %s is not a valid service.", self.RunType or "Unknown", ServiceName))
 
 			return nil
 		end
@@ -173,7 +175,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	end
 
 	self.RunType = ("Shared:%s"):format(runType) or runType
-	self.Shared = not isShared and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("KnightInit")).new(true, KnightInternal) or {}
+	self.Shared = not isShared and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("EnvironmentInit")).new(true, KnightInternal) or {}
 	self.Inited = false
 	self.Enum = require(ReplicatedStorage:WaitForChild("KNIGHT_ENUM"))
 	self.Internal = KnightInternal
