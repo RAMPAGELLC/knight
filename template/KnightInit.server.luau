@@ -9,19 +9,15 @@
                |___/    
  
  (©) Copyright 2025 Meta Games LLC, all rights reserved.
- Written by Metatable (@vq9o), Epicness and contributors.
  License: MIT
 
  Repository: https://github.com/RAMPAGELLC/knight
  Documentation: https://knight.metatable.dev
 ]]
 
-local manifest = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Packages = ReplicatedStorage:WaitForChild("Packages")
+local core = require(Packages:WaitForChild("knight"))
 
-manifest.Enum = require(script:WaitForChild("Enum"))
-
-manifest.Validate = function(...)
-	return require(script:WaitForChild("Validate"))(...)
-end
-
-return manifest
+core:DefineImportAliases({})
+require(core:GetEnvironmentInit()).new(false, core)

@@ -1,10 +1,7 @@
--- Define the configuration table for the Knight framework
-local config
-
-config = {
+return {
 	ERROR_EN_WITH_REF_ID = [[<b><font size="130" face="GothamBold">An error occured</font></b><font face="GothamMedium" size="35"><br /> A error occured within the Knight Framework. This issue has been automatically reported based on the experience privacy settings, however please report this to the experience developer(s). You will be disconnected in <b>%s</b> seconds.</font> <br /><br /><br /><font face="GothamMedium" size="35">KNIGHT ERROR REPORT REFERENCE ID:</font><br /><font face="Jura" size="55">%s</font>]],
 	ERR_EN_NO_REF_ID = [[<b><font size="130" face="GothamBold">An error occured</font></b><font face="GothamMedium" size="35"><br /> A error occured within the Knight Framework. This issue originated from a custom-class, please report this to the experience developer(s). You will be disconnected in <b>%s</b> seconds.</font>]],
-	
+
 	-- Specifies the default startup priority for services/controllers without a defined priority
 	DEFAULT_STARTUP_PRIORITY = 1,
 
@@ -20,7 +17,7 @@ config = {
 	-- Disables waiting for non-essential services to load during initialization
 	DO_NOT_WAIT = true,
 
-	-- Enables logging of startup information for debugging and diagnostics
+	-- Enables logging of startup information for debugging and diagnostics (enable to debug startup times)
 	LOG_STARTUP_INFO = false,
 
 	-- Enables tracking if a service/controller is taking too long; false means no warnings or errors for long startups
@@ -38,7 +35,7 @@ config = {
 		["Internal"] = 4, -- Priority level 4 (highest) for internal components
 		["Objects"] = 3, -- Priority level 3 for objects
 		["Services"] = 2, -- Priority level 2 for services
-		["Controllers"] = 2; -- Priority level 2 for controllers (services alias for client)
+		["Controllers"] = 2, -- Priority level 2 for controllers (services alias for client)
 	},
 
 	-- Enables or disables self.Remotes pointing to "knight/shared/Service/Remotes" - Requires the Knight Remotes library
@@ -55,6 +52,3 @@ config = {
 		"Remotes",
 	},
 }
-
--- Return the configuration table to be used throughout the Knight framework
-return config

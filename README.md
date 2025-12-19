@@ -17,19 +17,7 @@ git clone https://github.com/RAMPAGELLC/knight.git
 
 ### Option 2: Using Wally
 
-Add `knight = "vq9o/knight@1.0.5"` to `wally.toml` then run `wally install`.
-
-### Option 3: Using Knight CLI
-
-If you have Knight CLI installed:
-
-```bash
-knight init
-```
-
-### Option 4: Download RBXL Binary via GitHub releases
-
-https://github.com/RAMPAGELLC/knight/releases
+Add `knight = "vq9o/knight@latest"` to `wally.toml` then run `wally install`.
 
 ---
 
@@ -43,33 +31,6 @@ Create and autofill Knight services in VS Code.
 
 -   [Marketplace](https://marketplace.visualstudio.com/items?itemName=MetaGames.vsc-knight)
 -   [GitHub](https://github.com/RAMPAGELLC/vsc-knight)
-
----
-
-### ✅ Knight CLI
-
-Initialize and manage Knight projects via terminal.
-
--   [GitHub](https://github.com/RAMPAGELLC/KnightCLI)
-
-```bash
-npm install -g @rampagecorp/knight
-knight -h
-```
-
----
-
-### ✅ KPM.client (Knight Package Manager v2)
-
-Install and manage Knight packages.
-
--   [GitHub](https://github.com/RAMPAGELLC/kpm.client)
--   [Installer](https://github.com/RAMPAGELLC/kpm.client/releases/tag/installer-v1.0.1)
-
-```bash
-npm install -g kpm.client
-kpm -h
-```
 
 ---
 

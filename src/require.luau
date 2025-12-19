@@ -14,7 +14,7 @@
 
  Addons:
  Knight Script Profiler (KSP): https://github.com/RAMPAGELLC/KnightProfiler/tree/main
- Knight Package Manager (KPM): https://github.com/RAMPAGELLC/KnightPackageManager
+
 
  Links:
  Repository: https://github.com/RAMPAGELLC/knight

@@ -32,11 +32,10 @@ local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
 
 local KnightPackage = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("knight")
-local Remotes = ReplicatedStorage:WaitForChild("Knight", 30):WaitForChild("Services", 30):WaitForChild("Remotes", 30)
+local RemotesModule = ReplicatedStorage:WaitForChild("Knight", 30):WaitForChild("Services", 30):WaitForChild("Remotes", 30)
 local Types = require(script:WaitForChild("Types"))
 
 local KnightCore = require(KnightPackage)
-local manifestAPI = require(KnightCore.manifest)
 
 local ErrorHandler = require(KnightCore.class.ErrorHandler)
 local Log = require(KnightCore.class.Log)
@@ -113,12 +112,10 @@ function Knight:GetService(ServiceName: string): any
 
 	if isSharedService then
 		ServiceName = ServiceName:sub(8)
-		container = ReplicatedStorage:WaitForChild("Knight")
+		container = ReplicatedStorage:FindFirstChild("Knight") or ReplicatedStorage:WaitForChild("Knight", 5)
 	end
 
 	local Service = container:FindFirstChild(ServiceName, true)
-
-	warn(Modules, ServiceName)
 
 	if isSharedService then
 		if not Service or (Service ~= nil and Modules.Shared[ServiceName] == nil) then
@@ -145,13 +142,13 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	local self = setmetatable({}, Knight)
 
 	if RunService:IsClient() and not ReplicatedStorage:GetAttribute("ServerLoaded") then
-		Log(Log.LEVEL.INFO, "Knight is waiting for server to load.")
+		Log(Log.LEVEL.INFO, "Knight is waiting for server to load..")
 
 		repeat
 			task.wait()
 		until ReplicatedStorage:GetAttribute("ServerLoaded")
 
-		Log(Log.LEVEL.INFO, "Server has fully loaded on the server!")
+		Log(Log.LEVEL.INFO, "Server has fully loaded! Starting client...")
 	end
 
 	-- Setup Knight Dictionary
@@ -175,18 +172,37 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	end
 
 	self.RunType = ("Shared:%s"):format(runType) or runType
-	self.Shared = not isShared and require(ReplicatedStorage:WaitForChild("Knight"):WaitForChild("EnvironmentInit")).new(true, KnightInternal) or {}
+	self.Shared = {}
+
+	-- Lazy load shared environment to parallelize loading
+	if not isShared then
+		local KnightFolder = ReplicatedStorage:FindFirstChild("Knight") or ReplicatedStorage:WaitForChild("Knight", 5)
+		local EnvInit = KnightFolder:FindFirstChild("EnvironmentInit") or KnightFolder:WaitForChild("EnvironmentInit", 5)
+		self.Shared = require(EnvInit).new(true, KnightInternal)
+	end
+
 	self.Inited = false
-	self.Enum = require(ReplicatedStorage:WaitForChild("KNIGHT_ENUM"))
 	self.Internal = KnightInternal
-	self.KnightCache = { UpdateEvent = nil }
+
+	-- Load contents fully
+	for i, folder in pairs(script.Parent:GetChildren()) do
+		if not folder:IsA("Folder") then
+			continue
+		end
+
+		if not self[folder.Name] then
+			self[folder.Name] = {}
+		end
+
+		Packager:Package(self, Modules, self[folder.Name], folder)
+	end
 
 	if Config.ENABLE_KNIGHTDOTREMOTES ~= nil and Config.ENABLE_KNIGHTDOTREMOTES or Config.ENABLE_KNIGHTDOTREMOTES == nil then
-		if Remotes ~= nil and Remotes:IsA("ModuleScript") then
+		if RemotesModule ~= nil and RemotesModule:IsA("ModuleScript") then
 			local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
 
 			task.spawn(function()
-				moduleResult = table.pack(pcall(require, Remotes))
+				moduleResult = table.pack(pcall(require, RemotesModule))
 			end)
 
 			if moduleResult == nil then
@@ -205,6 +221,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			local success, mod = table.unpack(moduleResult)
 
 			if success and mod then
+				mod.Standalone = true
 				self.Remotes = mod
 			else
 				Log(Log.LEVEL.WARN, `Failed to import Knight remotes due to: {mod}.`)
@@ -214,94 +231,6 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			Log(Log.LEVEL.WARN, "Knight.Remotes link will not work as the framework failed to detect KnightRemotes script.")
 		end
 	end
-
-	-- Inject librarys
-	if Config.INJECT_DEFAULT_LIBRARIES then
-		for _, library: Folder in pairs(KnightCore.library:GetChildren()) do
-			local moduleStart, moduleStartupError, moduleResult = tick(), false, nil
-			local manifest = library:FindFirstChild("manifest")
-
-			if not manifest then
-				Log(Log.LEVEL.WARN, `Failed to import library %s as it does not contain a 'manifest.luau'.`)
-				continue
-			end
-
-			if not manifest:IsA("ModuleScript") then
-				Log(Log.LEVEL.WARN, `Failed to import library %s as manifest is not a 'ModuleScript'.`)
-				continue
-			end
-
-			task.spawn(function()
-				moduleResult = table.pack(pcall(require, manifest))
-			end)
-
-			if moduleResult == nil then
-				while moduleResult == nil and task.wait() do
-					if (tick() - moduleStart) >= 20 and not moduleStartupError then
-						Log(Log.LEVEL.INFO, `KnightLibrary.{library.Name}.luau is taking too long to startup.`)
-						moduleStartupError = true
-					end
-				end
-			end
-
-			if Config.LOG_STARTUP_INFO or moduleStartupError then
-				Log(Log.LEVEL.INFO, `KnightLibrary.{library.Name}.luau has loaded after {tostring(math.floor(tick() - moduleStart))} second(s).`)
-			end
-
-			local success, mod = table.unpack(moduleResult)
-
-			if not success then
-				Log(Log.LEVEL.WARN, `Failed to import library KnightLibrary.{library.Name}.luau due to: {mod}.`)
-				continue
-			end
-
-			if typeof(mod) == "string" then
-				Log(Log.LEVEL.WARN, `Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest is a 'string', expected 'table'.`)
-				continue
-			end
-
-			if manifestAPI.Validate(mod) == nil then
-				Log(Log.LEVEL.WARN, `Failed to import library KnightLibrary.{library.Name}.luau due to: Manifest error.`)
-				continue
-			end
-
-			-- Not allowed runtime.
-			if mod.runtime ~= "Shared" and mod.runtime ~= runType then
-				continue
-			end
-
-			if Knight[mod.library_name] ~= nil then
-				Log(
-					Log.LEVEL.WARN,
-					`Failed to import library KnightLibrary.{library.Name}.luau due to: Something is already registered within Knight as {mod.library_name}.`
-				)
-				continue
-			end
-
-			if mod.src ~= nil then
-				Knight[mod.library_name] = require(mod.src)
-			end
-
-			if Config.LOG_STARTUP_INFO then
-				Log(Log.LEVEL.INFO, `Library KnightLibrary.{library.Name}.luau has been imported to environment.`)
-			end
-		end
-	end
-
-	-- Load contents fully
-	for i, folder in pairs(script.Parent:GetChildren()) do
-		if not folder:IsA("Folder") then
-			continue
-		end
-
-		if not self[folder.Name] then
-			self[folder.Name] = {}
-		end
-
-		Packager:Package(self, Modules, self[folder.Name], folder)
-	end
-
-	self.KnightCache.UpdateEvent = if isShared then self.Objects.Event.new() else self.Shared.Objects.Event.new()
 
 	-- Automatic dependency priority; make sure the dependencies are loaded first.
 	-- Module.Dependencies = { "Module1", "shared/Module2" }
@@ -386,7 +315,6 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		Modules[moduleName].Standalone = false
 		Modules[moduleName].MemoryKBStart = Modules[moduleName].GetMemoryUsageKB()
 		Modules[moduleName].CanInit = Modules[moduleName].CanInit ~= nil and Modules[moduleName].CanInit or true
-		Modules[moduleName].CanUpdate = Modules[moduleName].CanUpdate ~= nil and Modules[moduleName].CanUpdate or true
 		Modules[moduleName].CanStart = Modules[moduleName].CanStart ~= nil and Modules[moduleName].CanStart or true
 
 		if type(module.Server) ~= "table" then
@@ -397,33 +325,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			Modules[moduleName].Client = {}
 		end
 
-		if not isShared and RunService:IsClient() then
-			-- Introduction of AGF/Knit like remotes api.
-			-- On the client you would do; self.Server.PointsService:GetLocalPoints() for example.
-
-			Modules[moduleName].Server = setmetatable({}, {
-				__index = function(_, serviceName: string)
-					return setmetatable({}, {
-						__index = function(_, eventName: string)
-							assert(self.Remotes, "KnightRemotes must be enabled to use the Knight Exposed-server functions API.")
-
-							if self.Remotes:IsRegistered("KCE:" .. serviceName .. ":" .. eventName) then
-								return function(...)
-									return self.Remotes:Fire("KCE:" .. serviceName .. ":" .. eventName, ...)
-								end
-							else
-								Log(
-									Log.LEVEL.WARN,
-									("RemoteFunction '%s' is not an valid exposed function of service '%s' is not registered."):format(eventName, serviceName)
-								)
-								return nil
-							end
-						end,
-					})
-				end,
-			})
-		end
-
+		-- Exposed server functions API
 		if not isShared and RunService:IsServer() then
 			for EventName: string, EventFunction in pairs(Modules[moduleName].Client) do
 				if typeof(EventFunction) ~= "function" then
@@ -432,7 +334,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 
 				assert(self.Remotes, "KnightRemotes must be enabled to use the Knight Exposed-server functions API.")
 
-				self.Remotes:Register("KCE:" .. moduleName .. ":" .. EventName, "RemoteFunction", function(...)
+				self.Remotes:TwoWay("KCE:" .. moduleName .. ":" .. EventName, function(...)
 					assert(Modules[moduleName].Client[EventName] ~= nil, `Exposed API '{EventName}' is no longer a valid function.`)
 					return Modules[moduleName].Client[EventName](Modules[moduleName], ...)
 				end)
@@ -440,9 +342,38 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		else
 			Modules[moduleName].Client = {}
 		end
+
+		-- Exposed client functions API
+		if not isShared and RunService:IsClient() then
+			Modules[moduleName].Server = setmetatable({}, {
+				__index = function(_, serviceName: string)
+					return setmetatable({}, {
+						__index = function(_, eventName: string)
+							assert(self.Remotes, "KnightRemotes must be enabled to use the Knight Exposed-server functions API.")
+
+							return function(...)
+								if self.Remotes:IsRegistered("KCE:" .. serviceName .. ":" .. eventName, true) then
+									return self.Remotes:Fire("KCE:" .. serviceName .. ":" .. eventName, ...)
+								else
+									Log(
+										Log.LEVEL.WARN,
+										("'%s' is not an valid exposed function of service '%s' is not registered."):format(eventName, serviceName)
+									)
+									return nil
+								end
+							end
+						end,
+					})
+				end,
+			})
+		end
 	end
 
 	-- Init modules
+	local initTasks = {}
+	local initResults = {}
+	local initStartTimes = {}
+
 	for moduleName: any, module: any in pairs(Modules) do
 		if module.Standalone ~= nil and module.Standalone then
 			continue
@@ -451,48 +382,81 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		local initMethod = Modules[moduleName].Init or Modules[moduleName].init
 
 		if initMethod and typeof(initMethod) == "function" and Modules[moduleName].CanInit then
-			local start, ok, state, errorReported = tick(), nil, nil, false
+			initStartTimes[moduleName] = tick()
+			initResults[moduleName] = { ok = nil, state = nil, errorReported = false }
 
-			task.spawn(function()
-				ok, state = xpcall(initMethod, function(...)
-					return ErrorHandler(self, Modules[moduleName].src, ...)
-				end, Modules[moduleName])
-			end)
+			table.insert(
+				initTasks,
+				task.spawn(function()
+					local ok, state = xpcall(initMethod, function(...)
+						return ErrorHandler(self, Modules[moduleName].src, ...)
+					end, Modules[moduleName])
 
-			while ok == nil and task.wait() do
-				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
-					errorReported = true
+					initResults[moduleName].ok = ok
+					initResults[moduleName].state = state
+				end)
+			)
+		end
+	end
+
+	-- Wait for all init tasks to complete (with timeout handling)
+	local allComplete = false
+	local checkStart = tick()
+
+	while not allComplete and task.wait() do
+		allComplete = true
+
+		for moduleName, result in pairs(initResults) do
+			if result.ok == nil then
+				allComplete = false
+				local elapsed = tick() - initStartTimes[moduleName]
+
+				if elapsed >= Config.TOO_LONG_LOAD_TIME and not result.errorReported then
+					result.errorReported = true
 					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service Init.`)
 				end
 
-				if errorReported or Config.DO_NOT_WAIT then
-					Log(Log.LEVEL.INFO, `{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`)
-					break
+				if result.errorReported or Config.DO_NOT_WAIT then
+					-- Mark as complete to not block startup
+					result.ok = true
+					result.state = "SKIPPED_DUE_TO_TIMEOUT"
 				end
 			end
+		end
 
-			if Config.LOG_STARTUP_INFO or errorReported then
-				Log(Log.LEVEL.INFO, `{moduleName}.luau Init() function completed after {tostring(tick() - start)} second(s).`)
+		-- Safety timeout to prevent infinite loops
+		if (tick() - checkStart) >= 60 then
+			Log(Log.LEVEL.WARN, "Init phase exceeded maximum timeout, proceeding anyway.")
+			break
+		end
+	end
+
+	-- Process init results
+	for moduleName: any, module: any in pairs(Modules) do
+		if module.Standalone ~= nil and module.Standalone then
+			continue
+		end
+
+		local result = initResults[moduleName]
+
+		if result then
+			local elapsed = tick() - initStartTimes[moduleName]
+
+			if Config.LOG_STARTUP_INFO or result.errorReported then
+				Log(Log.LEVEL.INFO, `{moduleName}.luau Init() function completed after {tostring(elapsed)} second(s).`)
 			end
 
-			if not ok and state == nil then
-				state = "UNKNOWN"
-			end
-			if not ok and Config.DO_NOT_WAIT then
-				ok = true
+			if not result.ok and result.state == nil then
+				result.state = "UNKNOWN"
 			end
 
 			Modules[moduleName].Init = nil
 
-			if not ok then
-				local errorLog = `{moduleName}.luau failed Service Init due to: {state} {debug.traceback()}`
+			if not result.ok and result.state ~= "SKIPPED_DUE_TO_TIMEOUT" then
+				local errorLog = `{moduleName}.luau failed Service Init due to: {result.state} {debug.traceback()}`
 				Log(Log.LEVEL.ERROR, errorLog)
 				self:Shutdown(true, errorLog)
 			end
-		end
-
-		if Modules[moduleName].Update ~= nil and typeof(Modules[moduleName].Update) == "function" and Modules[moduleName].CanUpdate then
-			Modules[moduleName].internalMaid:GiveTask(self.KnightCache.UpdateEvent:Connect(Modules[moduleName].Update))
 		end
 
 		if Config.LOG_STARTUP_INFO then
@@ -505,7 +469,11 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		return false
 	end
 
-	-- Start modules
+	-- Start modules (parallel execution for better performance)
+	local startTasks = {}
+	local startResults = {}
+	local startStartTimes = {}
+
 	for moduleName: any, module: any in pairs(Modules) do
 		if module.Standalone ~= nil and module.Standalone then
 			continue
@@ -514,42 +482,78 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 		local startMethod = Modules[moduleName].Start or Modules[moduleName].start
 
 		if startMethod and typeof(startMethod) == "function" and Modules[moduleName].CanStart then
-			local start, ok, state, errorReported = tick(), nil, nil, false
+			startStartTimes[moduleName] = tick()
+			startResults[moduleName] = { ok = nil, state = nil, errorReported = false }
 
-			task.spawn(function()
-				ok, state = xpcall(startMethod, function(...)
-					return ErrorHandler(self, Modules[moduleName].src, ...)
-				end, Modules[moduleName])
-			end)
+			table.insert(
+				startTasks,
+				task.spawn(function()
+					local ok, state = xpcall(startMethod, function(...)
+						return ErrorHandler(self, Modules[moduleName].src, ...)
+					end, Modules[moduleName])
 
-			while ok == nil and task.wait() do
-				if (tick() - start) >= Config.TOO_LONG_LOAD_TIME and not errorReported then
-					errorReported = true
+					startResults[moduleName].ok = ok
+					startResults[moduleName].state = state
+				end)
+			)
+		end
+	end
+
+	-- Wait for all start tasks to complete (with timeout handling)
+	local allComplete = false
+	local checkStart = tick()
+
+	while not allComplete and task.wait() do
+		allComplete = true
+
+		for moduleName, result in pairs(startResults) do
+			if result.ok == nil then
+				allComplete = false
+				local elapsed = tick() - startStartTimes[moduleName]
+
+				if elapsed >= Config.TOO_LONG_LOAD_TIME and not result.errorReported then
+					result.errorReported = true
 					Log(Log.LEVEL.WARN, `{moduleName}.luau is taking too long to run Service Start.`)
 				end
 
-				if errorReported or Config.DO_NOT_WAIT then
-					Log(Log.LEVEL.INFO, `{moduleName}.luau is taking too long, DO_NOT_WAIT FFlag is enabled, not waiting for module.`)
-					break
+				if result.errorReported or Config.DO_NOT_WAIT then
+					-- Mark as complete to not block startup
+					result.ok = true
+					result.state = "SKIPPED_DUE_TO_TIMEOUT"
 				end
 			end
+		end
 
-			if Config.LOG_STARTUP_INFO or errorReported then
-				Log(Log.LEVEL.WARN, `{moduleName}.luau Start completed after {tostring(math.floor(tick() - start))} second(s).`)
+		-- Safety timeout to prevent infinite loops
+		if (tick() - checkStart) >= 60 then
+			Log(Log.LEVEL.WARN, "Start phase exceeded maximum timeout, proceeding anyway.")
+			break
+		end
+	end
+
+	-- Process start results
+	for moduleName: any, module: any in pairs(Modules) do
+		if module.Standalone ~= nil and module.Standalone then
+			continue
+		end
+
+		local result = startResults[moduleName]
+
+		if result then
+			local elapsed = tick() - startStartTimes[moduleName]
+
+			if Config.LOG_STARTUP_INFO or result.errorReported then
+				Log(Log.LEVEL.WARN, `{moduleName}.luau Start completed after {tostring(math.floor(elapsed))} second(s).`)
 			end
 
-			if not ok and state == nil then
-				state = "UNKNOWN"
-			end
-
-			if not ok and Config.DO_NOT_WAIT then
-				ok = true
+			if not result.ok and result.state == nil then
+				result.state = "UNKNOWN"
 			end
 
 			Modules[moduleName].Start = nil
 
-			if not ok then
-				local errorLog = `{moduleName}.luau failed Service Start due to: {state}.`
+			if not result.ok and result.state ~= "SKIPPED_DUE_TO_TIMEOUT" then
+				local errorLog = `{moduleName}.luau failed Service Start due to: {result.state}.`
 				Log(Log.LEVEL.ERROR, errorLog)
 
 				if Config.SHUTDOWN_ON_LIBRARY_FAIL then
@@ -557,15 +561,6 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				end
 			end
 		end
-	end
-
-	if self.KnightCache ~= nil then
-		RunService.Heartbeat:Connect(function(deltaTime)
-			if self.KnightCache.UpdateEvent == nil then
-				return
-			end
-			self.KnightCache.UpdateEvent:Fire(deltaTime)
-		end)
 	end
 
 	self.Inited = true

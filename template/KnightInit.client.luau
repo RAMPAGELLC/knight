@@ -10,7 +10,7 @@
  
  (©) Copyright 2025 Meta Games LLC, all rights reserved.
  License: MIT
- Knight Package Manager (KPM): https://github.com/RAMPAGELLC/KnightPackageManager
+
  Repository: https://github.com/RAMPAGELLC/knight
  Documentation: https://knight.metatable.dev
 ]]

@@ -1,7 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local KNIGHT_TYPES = require(ReplicatedStorage:WaitForChild("KNIGHT_TYPES"))
-
-local TestClientService = {} :: KNIGHT_TYPES.KnightClass
+local TestClientService = {}
 
 function TestClientService:foo()
 	warn("TestClientService has imported!")

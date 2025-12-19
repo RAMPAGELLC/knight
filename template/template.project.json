@@ -14,7 +14,11 @@
       "Packages": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
-        "$path": "Packages"
+        "$path": "../Packages",
+        "knight": {
+          "$ignoreUnknownInstances": true,
+          "$path": "../src"
+        }
       }
     },
     "ServerScriptService": {
@@ -22,13 +26,12 @@
       "$ignoreUnknownInstances": true,
       "$path": "game/ServerScriptService",
       "KnightInit": {
-        "$path": "KnightInit.server.lua"
+        "$path": "KnightInit.server.luau"
       }
     },
     "ServerStorage": {
       "$className": "ServerStorage",
       "$ignoreUnknownInstances": true,
-      "$path": "game/ServerStorage",
 
       "Knight": {
         "$className": "Folder",
@@ -48,7 +51,7 @@
           "$path": "client"
         },
         "KnightInit": {
-          "$path": "KnightInit.client.lua"
+          "$path": "KnightInit.client.luau"
         }
       },
       "$ignoreUnknownInstances": true
