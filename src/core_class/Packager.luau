@@ -26,6 +26,15 @@ local IsClient = RunService:IsClient()
 local runType = IsClient and "Client" or "Server"
 
 local FrameworkPackager = {}
+local standaloneModules = setmetatable({}, { __mode = "k" })
+
+function FrameworkPackager:MarkStandalone(mod)
+	standaloneModules[mod] = true
+end
+
+function FrameworkPackager:IsStandalone(mod)
+	return table.isfrozen(mod) or standaloneModules[mod] == true or not not mod.Standalone
+end
 
 function FrameworkPackager:Package(Knight, Modules, tab, folder)
 	-- Create metatable for the tab
@@ -113,11 +122,16 @@ function FrameworkPackager:Package(Knight, Modules, tab, folder)
 				local success, result = xpcall(function()
 					local mod = require(child)
 					if type(mod) == "table" then
-						if table.isfrozen(mod) or child:HasTag("KnightStandalone") then
+						if table.isfrozen(mod)
+							or child:HasTag("KnightStandalone")
+							or mod.Standalone
+							or (next(mod) == nil and getmetatable(mod) == nil)
+						then
+							self:MarkStandalone(mod)
 							return mod
 						end
 
-						if mod.Standalone ~= nil and mod.Standalone == true then
+						if getmetatable(mod) ~= nil then
 							return mod
 						end
 
@@ -187,37 +201,37 @@ function FrameworkPackager:Package(Knight, Modules, tab, folder)
 			end
 
 			if typeof(mod) == "table" and not CollectionService:HasTag(child, "KNIGHT_IGNORE_MODULE") then
-				if not table.isfrozen(mod) then
+				if not self:IsStandalone(mod) then
 					mod.src = child
-				end
 
-				if Config.CYCLIC_INDEXING_ENABLED then
-					for k: any, v: any in pairs(Knight) do
-						if typeof(k) == "string" and k == "" then
-							continue
+					if Config.CYCLIC_INDEXING_ENABLED then
+						for k: any, v: any in pairs(Knight) do
+							if typeof(k) == "string" and k == "" then
+								continue
+							end
+
+							if typeof(k) == "string" and k == "KnightCache" then
+								continue
+							end
+
+							mod[k] = v
+						end
+					end
+
+					if not Config.CYCLIC_INDEXING_ENABLED then
+						for i, v in pairs(DefaultConfig.CYCLIC_DISABLE_KEEP_INDEX) do
+							mod[v] = Knight[v]
 						end
 
-						if typeof(k) == "string" and k == "KnightCache" then
-							continue
+						if Config.KEEP_SHARED_ON_CYCLIC_DISABLE then
+							mod["Shared"] = Knight.Shared
 						end
-
-						mod[k] = v
-					end
-				end
-
-				if not Config.CYCLIC_INDEXING_ENABLED then
-					for i, v in pairs(DefaultConfig.CYCLIC_DISABLE_KEEP_INDEX) do
-						mod[v] = Knight[v]
 					end
 
-					if Config.KEEP_SHARED_ON_CYCLIC_DISABLE then
-						mod["Shared"] = Knight.Shared
+					if mod.Priority == nil then
+						mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil and Config.STARTUP_PRIORITY[child.Parent.Name]
+							or DefaultConfig.DEFAULT_STARTUP_PRIORITY
 					end
-				end
-
-				if mod.Priority == nil then
-					mod.Priority = Config.STARTUP_PRIORITY[child.Parent.Name] ~= nil and Config.STARTUP_PRIORITY[child.Parent.Name]
-						or DefaultConfig.DEFAULT_STARTUP_PRIORITY
 				end
 
 				Modules[name] = mod

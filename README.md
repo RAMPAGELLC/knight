@@ -21,6 +21,18 @@ Add `knight = "vq9o/knight@latest"` to `wally.toml` then run `wally install`.
 
 ---
 
+## Module tables
+
+Frozen tables and empty tables without a metatable are exposed as returned and are not
+initialized as services. To preserve a non-empty data table, set `Standalone = true`
+on it or tag its ModuleScript `KnightStandalone`.
+
+Standalone modules remain available through their folder and `GetService`, but Knight does not inject fields or run their
+`Init` and `Start` methods. An otherwise empty table can opt into service behavior by
+returning `{ Standalone = false }`.
+
+---
+
 ## 🛠 Tools (Optional)
 
 These tools are **optional** and exist to improve your workflow with Knight.

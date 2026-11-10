@@ -221,7 +221,9 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 			local success, mod = table.unpack(moduleResult)
 
 			if success and mod then
-				mod.Standalone = true
+				if type(mod) == "table" then
+					Packager:MarkStandalone(mod)
+				end
 				self.Remotes = mod
 			else
 				Log(Log.LEVEL.WARN, `Failed to import Knight remotes due to: {mod}.`)
@@ -251,6 +253,10 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 
 		if not module then
 			Log(Log.LEVEL.WARN, `{moduleName} is not a valid service.`)
+			return
+		end
+
+		if Packager:IsStandalone(module) then
 			return
 		end
 
@@ -288,7 +294,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 
 	-- Prepare modules
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Standalone ~= nil and module.Standalone then
+		if Packager:IsStandalone(module) then
 			continue
 		end
 
@@ -375,7 +381,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	local initStartTimes = {}
 
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Standalone ~= nil and module.Standalone then
+		if Packager:IsStandalone(module) then
 			continue
 		end
 
@@ -433,11 +439,11 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 
 	-- Process init results
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Standalone ~= nil and module.Standalone then
+		local result = initResults[moduleName]
+
+		if not result and Packager:IsStandalone(module) then
 			continue
 		end
-
-		local result = initResults[moduleName]
 
 		if result then
 			local elapsed = tick() - initStartTimes[moduleName]
@@ -450,7 +456,9 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				result.state = "UNKNOWN"
 			end
 
-			Modules[moduleName].Init = nil
+			if not Packager:IsStandalone(module) then
+				Modules[moduleName].Init = nil
+			end
 
 			if not result.ok and result.state ~= "SKIPPED_DUE_TO_TIMEOUT" then
 				local errorLog = `{moduleName}.luau failed Service Init due to: {result.state} {debug.traceback()}`
@@ -475,7 +483,7 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 	local startStartTimes = {}
 
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Standalone ~= nil and module.Standalone then
+		if Packager:IsStandalone(module) then
 			continue
 		end
 
@@ -533,11 +541,11 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 
 	-- Process start results
 	for moduleName: any, module: any in pairs(Modules) do
-		if module.Standalone ~= nil and module.Standalone then
+		local result = startResults[moduleName]
+
+		if not result and Packager:IsStandalone(module) then
 			continue
 		end
-
-		local result = startResults[moduleName]
 
 		if result then
 			local elapsed = tick() - startStartTimes[moduleName]
@@ -550,7 +558,9 @@ function Knight.new(isShared: boolean, KnightInternal: Types.KnightInternal)
 				result.state = "UNKNOWN"
 			end
 
-			Modules[moduleName].Start = nil
+			if not Packager:IsStandalone(module) then
+				Modules[moduleName].Start = nil
+			end
 
 			if not result.ok and result.state ~= "SKIPPED_DUE_TO_TIMEOUT" then
 				local errorLog = `{moduleName}.luau failed Service Start due to: {result.state}.`
